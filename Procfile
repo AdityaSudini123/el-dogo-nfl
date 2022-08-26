@@ -1,2 +1,2 @@
-web:gunicorn app:maingit
+web:gunicorn app:main
 
