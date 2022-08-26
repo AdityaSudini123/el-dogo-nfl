@@ -1,1 +1,1 @@
-web:gunicorn MaxJules:main.py
+web:gunicorn app:main.py
