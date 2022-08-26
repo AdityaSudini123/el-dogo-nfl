@@ -1,0 +1,21 @@
+{% extends "base.html" %} {% block title %}Select Your Picks{% endblock %} {% block content
+%}
+<h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
+<p align="center"><b>Pick a team to win, and enter a confidence score (between 1 and 16)</b></p>
+<div>
+  <form method="POST">
+  {% for i in range(0, len) %}
+     <select name="{{home_teams[i]}}" id="{{home_teams[i]}}" class="form-select" aria-label="Default select example" required>
+          <option selected>Select a team</option>
+          <option value="{{home_teams[i]}}">{{home_teams[i]}}</option>
+          <option value="{{away_teams[i]}}">{{away_teams[i]}}</option>
+     </select>
+      <input name="{{away_teams[i]}}" id="{{away_teams[i]}}" type="text" min="1" max="16" placeholder="enter confidence" required>
+      <br>
+      <br>
+  {% endfor %}
+      <button class="btn btn-primary" type="submit">Submit</button>
+  </form>
+</div>
+
+{% endblock %}

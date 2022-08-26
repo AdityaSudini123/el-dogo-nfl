@@ -1,0 +1,34 @@
+{% extends "base.html" %}
+{% block title %}CONTACT{% endblock %}
+
+
+<body>
+{% block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
+            <a class="nav-item nav-link" href="/scoresheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/rules">Rules</a>
+            <a class="nav-item nav-link" href="/archives">Archives</a>
+            <a class="nav-item nav-link" href="/contact">Contact</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+<center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
+<br>
+<p>Primary contact: ElDogoPuzzler@gmail.com</p>
+<br>
+<p>Website maintenance contact: adityasudini2001@gmail.com</p>
+{% endblock %}
+</body>

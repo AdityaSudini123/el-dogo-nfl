@@ -1,0 +1,36 @@
+{% extends "base.html" %}
+{% block title %}RULES{% endblock %}
+
+
+<body>
+{% block content %}
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
+            <a class="nav-item nav-link" href="/scoresheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/rules">Rules</a>
+            <a class="nav-item nav-link" href="/archives">Archives</a>
+            <a class="nav-item nav-link" href="/contact">Contact</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+<p>
+    - For each game select a winner<br>
+    - Assign a confidence level, between 1 and 16 <br>
+      (unless there are fewer than 16 games in that week, in which case, assign a number between 1 and the total number
+       of games that week).<br>
+    - Each number may only be used once per week.<br>
+
+{% endblock %}
+</body>
