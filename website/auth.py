@@ -195,11 +195,13 @@ def scoresheet():
     return render_template('scoresheet.html', html_code=html_code, len=code_len)
 
 @auth.route('/rules')
+@login_required
 def rules():
 
     return render_template('rules.html')
 
 @auth.route('/archives')
+@login_required
 def archives():
     html_code = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
     html_code = html_code['html_code']

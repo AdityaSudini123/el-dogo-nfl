@@ -1,5 +1,28 @@
-{% extends "base.html" %} {% block title %}Select Your Picks{% endblock %} {% block content
-%}
+{% extends "base.html" %} {% block title %}Select Your Picks{% endblock %}
+{% block content %}
+<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <div class="container-fluid">
+    <button
+      class="navbar-toggler"
+      type="button"
+      data-bs-toggle="collapse"
+      data-bs-target="#navbar"
+    >
+      <span class="navbar-toggler-icon"></span>
+    </button>
+    <div class="collapse navbar-collapse" id="navbar">
+      <div class="navbar-nav">
+        <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
+        <a class="nav-item nav-link" href="/scoresheet">Master Sheet</a>
+        <a class="nav-item nav-link" href="/rules">Rules</a>
+        <a class="nav-item nav-link" href="/archives">Archives</a>
+        <a class="nav-item nav-link" href="/contact">Contact</a>
+        <a class="nav-item nav-link" href="/logout">logout</a>
+      </div>
+    </div>
+  </div>
+</nav>
+
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
 <p align="center"><b>Pick a team to win, and enter a confidence score (between 1 and 16)</b></p>
 <div>
