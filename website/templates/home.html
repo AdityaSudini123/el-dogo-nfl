@@ -4,7 +4,7 @@
 
 <body>
 {% block content %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -17,9 +17,28 @@
         <div class="collapse navbar-collapse" id="navbar">
           <div class="navbar-nav">
             <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
-            <a class="nav-item nav-link" href="/scoresheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
             <a class="nav-item nav-link" href="/rules">Rules</a>
-            <a class="nav-item nav-link" href="/archives">Archives</a>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Personal Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/personal_archives">Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                Mastersheet Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
             <a class="nav-item nav-link" href="/contact">Contact</a>
             <a class="nav-item nav-link" href="/logout">logout</a>
           </div>

@@ -22,10 +22,21 @@
         </div>
       </div>
     </nav>
-<center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
-<br>
-<p>Primary contact: ElDogoPuzzler@gmail.com</p>
-<br>
-<p>Website maintenance contact: adityasudini2001@gmail.com</p>
+    <div class="dropdown">
+      <button class="btn btn-secondary dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+        Dropdown button
+      </button>
+      <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+        <li><a class="dropdown-item" href="#">Action</a></li>
+        <li><a class="dropdown-item" href="#">Another action</a></li>
+        <li><a class="dropdown-item" href="#">Something else here</a></li>
+      </ul>
+    </div>
+    <center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
+    <br>
+    <p>Primary contact: ElDogoPuzzler@gmail.com</p>
+    <br>
+    <p>Website maintenance contact: adityasudini2001@gmail.com</p>
+
 {% endblock %}
 </body>

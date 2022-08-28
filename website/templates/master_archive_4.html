@@ -1,10 +1,10 @@
 {% extends "base.html" %}
-{% block title %}RULES{% endblock %}
+{% block title %}ARCHIVES{% endblock %}
 
 
 <body>
 {% block content %}
-    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+   <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -45,12 +45,8 @@
         </div>
       </div>
     </nav>
-<p>
-    - For each game select a winner<br>
-    - Assign a confidence level, between 1 and 16 <br>
-      (unless there are fewer than 16 games in that week, in which case, assign a number between 1 and the total number
-       of games that week).<br>
-    - Each number may only be used once per week.<br>
-
+{% for i in range(0, len): %}
+    {{html_code[i] | safe}}
+{% endfor %}
 {% endblock %}
 </body>
