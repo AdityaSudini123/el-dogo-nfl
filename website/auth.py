@@ -1,5 +1,4 @@
 import csv
-
 import numpy
 from pymongo import MongoClient
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
@@ -30,15 +29,14 @@ def login():
     if request.method == 'POST':
         email = request.form.get("email")
         password = request.form.get("password")
+        username = request.form.get("username")
 
-        user_exists = User.query.filter_by(email=email).first()
+        user_exists = User.query.filter_by(username=username).first()
         if user_exists:
             if check_password_hash(user_exists.password, password):
-                flash('Logged in successfully!', category='success')
+                flash(f'Logged in as {username}', category='success')
                 login_user(user_exists, remember=True)
-                print(current_user.username)
                 return redirect(url_for('views.home'))
-
         else:
             flash('Email does not exist.', category='error')
 
@@ -91,10 +89,19 @@ def logout():
     logout_user()
     return redirect(url_for("views.home"))
 
+@auth.route('/rules', methods=['GET', 'POST'])
+@login_required
+def rules():
+    return render_template('rules.html')
+
 @auth.route("/select_picks", methods=['GET', 'POST'])
 @login_required
 def select_picks():
     weekly_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Schedule is not available yet')
+        return redirect(url_for('views.home'))
+
     week_number = weekly_schedule['week_number']
     weekly_schedule.pop("_id")
     weekly_schedule.pop("week_number")
@@ -114,21 +121,26 @@ def select_picks():
         if not entry_exists:
             player_entry = {}
             for i in range(len(home_teams)):
-                # home_teams[i] refers to winner via the fixture number in the index
-                game_winner = request.form.get(str(home_teams[i]))
-                # away_teams[i] refers to the confidence number
-                game_confidence = request.form.get(str(away_teams[i]))
-                player_entry[game_winner] = game_confidence
+                home_confidence = []
+                away_confidence = []
+                for i in range(len(home_teams)):
+                    home_confidence.append(request.form.get(f'home_team_{i}'))
+                    # away_teams[i] refers to the confidence number
+                    away_confidence.append(request.form.get(f'away_team_{i}'))
+                    # while home_confidence != '0' and away_confidence != '0':
+                    #     flash(category='error', message='You cannot enter a value greater than 0 for both home and away teams')
+                    #     return redirect(url_for('auth.select_picks'))
+                teams_dict = {}
+                for i in range(len(home_teams)):
+                    teams_dict[home_teams[i]] = home_confidence[i]
+                    teams_dict[away_teams[i]] = away_confidence[i]
+                winners_dict = {}
+                for item in teams_dict.items():
+                    if item[1] != '0':
+                        winners_dict[item[0]] = item[1]
 
-            chosen_teams = []
-            chosen_confidence = []
-            for entry in player_entry.items():
-                team = entry[0]
-                confidence = entry[1]
-                chosen_teams.append(team)
-                chosen_confidence.append(confidence)
-            new_entry = {"_id": current_user.username, "week_number": week_number, "winners": chosen_teams,
-                         "confidence": chosen_confidence}
+            new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
+                         "confidence": list(winners_dict.values())}
             mongoDB[f'week_{week_number}'].insert_one(new_entry)
             return redirect(url_for('views.home'))
         else:
@@ -142,9 +154,15 @@ def select_picks():
 @login_required
 def mastersheet():
     current_week_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
-    week_number = current_week_schedule['week_number']
     current_week_results = mongoDB['current_week'].find_one({'_id': 'results'})
+
+    if not current_week_schedule or current_week_results:
+        flash(category='error', message='Mastersheet not available yet')
+        return redirect(url_for('views.home'))
+
+    week_number = current_week_schedule['week_number']
     current_week_results = current_week_results['winners']
+
     winning_teams = []
     winning_team_scores = []
     for item in current_week_results.items():
@@ -201,12 +219,7 @@ def master_archive_1():
     master_exists = mongoDB['week_1'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -218,12 +231,7 @@ def master_archive_2():
     master_exists = mongoDB['week_2'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -235,12 +243,7 @@ def master_archive_3():
     master_exists = mongoDB['week_3'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -252,12 +255,7 @@ def master_archive_4():
     master_exists = mongoDB['week_4'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -269,12 +267,7 @@ def master_archive_5():
     master_exists = mongoDB['week_5'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -286,12 +279,7 @@ def master_archive_6():
     master_exists = mongoDB['week_6'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -303,12 +291,7 @@ def master_archive_7():
     master_exists = mongoDB['week_7'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -320,12 +303,7 @@ def master_archive_8():
     master_exists = mongoDB['week_8'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -337,12 +315,7 @@ def master_archive_9():
     master_exists = mongoDB['week_9'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -354,12 +327,7 @@ def master_archive_10():
     master_exists = mongoDB['week_10'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -371,12 +339,7 @@ def master_archive_11():
     master_exists = mongoDB['week_11'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -388,12 +351,7 @@ def master_archive_12():
     master_exists = mongoDB['week_12'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -405,12 +363,7 @@ def master_archive_13():
     master_exists = mongoDB['week_13'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -422,12 +375,7 @@ def master_archive_14():
     master_exists = mongoDB['week_14'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -439,12 +387,7 @@ def master_archive_15():
     master_exists = mongoDB['week_15'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -456,12 +399,7 @@ def master_archive_16():
     master_exists = mongoDB['week_16'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
+
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -473,30 +411,23 @@ def master_archive_17():
     master_exists = mongoDB['week_17'].find_one({'_id': 'mastersheet'})
     if master_exists:
         html_code = master_exists['html_code']
-        all_collection_names = mongoDB.list_collection_names()
-        weekly_collection_names = []
-        for collection_name in all_collection_names:
-            if collection_name not in ['user_weekly_picks', 'user_data', 'current_week']:
-                weekly_collection_names.append(collection_name)
-        number_of_collections = len(weekly_collection_names)
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
         return redirect(url_for('views.home'))
-
-@auth.route('/personal_archives')
-@login_required
-def personal_archives():
-    return render_template('personal_archives.html')
 
 @auth.route('/personal_archive_1')
 @login_required
 def personal_archive_1():
     schedule = mongoDB['week_1'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_1'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -533,9 +464,13 @@ def personal_archive_1():
 def personal_archive_2():
     schedule = mongoDB['week_2'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_2'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -572,10 +507,13 @@ def personal_archive_2():
 def personal_archive_3():
     schedule = mongoDB['week_3'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
-
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
     results = mongoDB['week_3'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
 
@@ -611,9 +549,13 @@ def personal_archive_3():
 def personal_archive_4():
     schedule = mongoDB['week_4'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_4'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -650,9 +592,13 @@ def personal_archive_4():
 def personal_archive_5():
     schedule = mongoDB['week_5'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_5'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -689,9 +635,13 @@ def personal_archive_5():
 def personal_archive_6():
     schedule = mongoDB['week_6'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_6'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -728,9 +678,13 @@ def personal_archive_6():
 def personal_archive_7():
     schedule = mongoDB['week_7'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_7'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -767,9 +721,13 @@ def personal_archive_7():
 def personal_archive_8():
     schedule = mongoDB['week_8'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_8'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -806,9 +764,13 @@ def personal_archive_8():
 def personal_archive_9():
     schedule = mongoDB['week_9'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_9'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -845,9 +807,13 @@ def personal_archive_9():
 def personal_archive_10():
     schedule = mongoDB['week_10'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_10'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -884,9 +850,13 @@ def personal_archive_10():
 def personal_archive_11():
     schedule = mongoDB['week_11'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_11'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -923,9 +893,13 @@ def personal_archive_11():
 def personal_archive_12():
     schedule = mongoDB['week_12'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_12'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -962,9 +936,13 @@ def personal_archive_12():
 def personal_archive_13():
     schedule = mongoDB['week_13'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_13'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -1001,9 +979,13 @@ def personal_archive_13():
 def personal_archive_14():
     schedule = mongoDB['week_14'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_14'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -1040,9 +1022,13 @@ def personal_archive_14():
 def personal_archive_15():
     schedule = mongoDB['week_15'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_15'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -1079,9 +1065,13 @@ def personal_archive_15():
 def personal_archive_16():
     schedule = mongoDB['week_16'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_16'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -1118,9 +1108,13 @@ def personal_archive_16():
 def personal_archive_17():
     schedule = mongoDB['week_17'].find_one({'_id': 'schedule'})
     all_games = []
-    for item in schedule.items():
-        if 'game' in item[0]:
-            all_games.append(item[1])
+    if schedule:
+        for item in schedule.items():
+            if 'game' in item[0]:
+                all_games.append(item[1])
+    else:
+        flash(category='error', message='This week is not available to view yet')
+        return redirect(url_for('views.home'))
 
     results = mongoDB['week_17'].find_one({'_id': 'results'})
     results = list(results['winners'].keys())
@@ -1152,10 +1146,7 @@ def personal_archive_17():
         flash(category='error', message='You do not have an entry for this week')
         return redirect(url_for('views.home'))
 
-@auth.route('/rules')
-@login_required
-def rules():
-    return render_template('rules.html')
+
 
 @auth.route('/contact')
 def contact():

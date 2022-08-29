@@ -44,20 +44,37 @@
 
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
 <p align="center"><b>Pick a team to win, and enter a confidence score (between 1 and 16)</b></p>
-<div>
-  <form method="POST">
-  {% for i in range(0, len) %}
-     <select name="{{home_teams[i]}}" id="{{home_teams[i]}}" class="form-select" aria-label="Default select example" required>
-          <option selected>Select a team</option>
-          <option value="{{home_teams[i]}}">{{home_teams[i]}}</option>
-          <option value="{{away_teams[i]}}">{{away_teams[i]}}</option>
-     </select>
-      <input name="{{away_teams[i]}}" id="{{away_teams[i]}}" type="text" min="1" max="16" placeholder="enter confidence" required>
-      <br>
-      <br>
-  {% endfor %}
-      <button class="btn btn-primary" type="submit">Submit</button>
-  </form>
-</div>
 
+<div>
+  {% for i in range(0, len) %}
+    <table class="table">
+      <thead>
+        <tr>
+          <th scope="col">game {{i+1}}</th>
+          <th scope="col">Teams</th>
+          <th scope="col">Confidence</th>
+        </tr>
+      </thead>
+      <tbody>
+        <tr>
+          <th scope="row">Home Team</th>
+          <td>{{home_teams[i]}}</td>
+          <td>
+            <input form="myForm" name="home_team_{{i}}" id="home_confidence" type="text" placeholder="enter here" required>
+          </td>
+        </tr>
+        <tr>
+          <th scope="row">Away Team</th>
+          <td>{{away_teams[i]}}</td>
+          <td>
+            <input form="myForm" name="away_team_{{i}}" id="away_confidence" type="text" placeholder="enter here" required>
+          </td>
+        </tr>
+      </tbody>
+    </table>
+    {% endfor %}
+    <form id="myForm" method="post">
+      <input form="myForm" type="submit">
+    </form>
+</div>
 {% endblock %}
