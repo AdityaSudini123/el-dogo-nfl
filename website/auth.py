@@ -127,9 +127,9 @@ def select_picks():
                     home_confidence.append(request.form.get(f'home_team_{i}'))
                     # away_teams[i] refers to the confidence number
                     away_confidence.append(request.form.get(f'away_team_{i}'))
-                    # while home_confidence != '0' and away_confidence != '0':
-                    #     flash(category='error', message='You cannot enter a value greater than 0 for both home and away teams')
-                    #     return redirect(url_for('auth.select_picks'))
+                    if home_confidence[i] != '0' and away_confidence[i] != '0':
+                        flash(category='error', message='You cannot enter a value greater than 0 for both home and away teams')
+                        return redirect(url_for('auth.select_picks'))
                 teams_dict = {}
                 for i in range(len(home_teams)):
                     teams_dict[home_teams[i]] = home_confidence[i]
@@ -138,9 +138,9 @@ def select_picks():
                 for item in teams_dict.items():
                     if item[1] != '0':
                         winners_dict[item[0]] = item[1]
-
+            tie_breaker = request.form.get('tie_breaker')
             new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
-                         "confidence": list(winners_dict.values())}
+                         "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker}
             mongoDB[f'week_{week_number}'].insert_one(new_entry)
             return redirect(url_for('views.home'))
         else:
@@ -156,62 +156,22 @@ def mastersheet():
     current_week_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
     current_week_results = mongoDB['current_week'].find_one({'_id': 'results'})
 
-    if not current_week_schedule or current_week_results:
+    if not current_week_results:
         flash(category='error', message='Mastersheet not available yet')
         return redirect(url_for('views.home'))
 
     week_number = current_week_schedule['week_number']
-    current_week_results = current_week_results['winners']
-
-    winning_teams = []
-    winning_team_scores = []
-    for item in current_week_results.items():
-        winning_teams.append(item[0])
-        winning_team_scores.append(item[1])
-    teams = []
-    for item in current_week_schedule.values():
-        teams.append(item)
-    teams = teams[2:]
-
-    home_teams = []
-    away_teams = []
-    for team in teams:
-        home_teams.append(team[0])
-        away_teams.append(team[1])
-    all_teams = []
-    for i in range(len(home_teams)):
-        all_teams.append(home_teams[i])
-        all_teams.append(away_teams[i])
-
-
     entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
-
-    while not entry_exists:
+    if not entry_exists:
         flash('You must select your picks before viewing the score sheet', category='error')
         return redirect(
             url_for("auth.select_picks"))
-    if entry_exists:
-        player_selections = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
-        player_selections.pop('_id')
-        player_selections.pop('week_number')
 
-        teams_selected = player_selections['winners']
-        confidence_entered = player_selections['confidence']
-
-        player_picks = {}
-        for i in range(len(teams_selected)):
-            player_picks[teams_selected[i]] = confidence_entered[i]
-
-        total = 0
-        for i in range(len(winning_teams)):
-            if teams_selected[i] == winning_teams[i]:
-                total += int(player_picks[teams_selected[i]])
-
-    html_code = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
-    html_code = html_code['html_code']
+    weekly_mastersheet = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
+    weekly_winner = weekly_mastersheet['weekly_winner']
+    html_code = weekly_mastersheet['html_code']
     code_len = len(html_code)
-
-    return render_template('mastersheet.html', html_code=html_code, len=code_len)
+    return render_template('mastersheet.html', html_code=html_code, len=code_len, weekly_winner=weekly_winner)
 
 @auth.route('/master_archive_1', methods=['GET', 'POST'])
 @login_required
@@ -430,7 +390,11 @@ def personal_archive_1():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_1'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_1'].find_one({'_id': current_user.username})
     if player_selections:
@@ -473,7 +437,11 @@ def personal_archive_2():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_2'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_2'].find_one({'_id': current_user.username})
     if player_selections:
@@ -515,7 +483,11 @@ def personal_archive_3():
         flash(category='error', message='This week is not available to view yet')
         return redirect(url_for('views.home'))
     results = mongoDB['week_3'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_3'].find_one({'_id': current_user.username})
     if player_selections:
@@ -558,7 +530,11 @@ def personal_archive_4():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_4'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_4'].find_one({'_id': current_user.username})
     if player_selections:
@@ -601,7 +577,11 @@ def personal_archive_5():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_5'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_5'].find_one({'_id': current_user.username})
     if player_selections:
@@ -644,7 +624,11 @@ def personal_archive_6():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_6'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_6'].find_one({'_id': current_user.username})
     if player_selections:
@@ -687,7 +671,11 @@ def personal_archive_7():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_7'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_7'].find_one({'_id': current_user.username})
     if player_selections:
@@ -730,7 +718,11 @@ def personal_archive_8():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_8'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_8'].find_one({'_id': current_user.username})
     if player_selections:
@@ -773,7 +765,11 @@ def personal_archive_9():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_9'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_9'].find_one({'_id': current_user.username})
     if player_selections:
@@ -816,7 +812,11 @@ def personal_archive_10():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_10'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_10'].find_one({'_id': current_user.username})
     if player_selections:
@@ -859,7 +859,11 @@ def personal_archive_11():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_11'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_11'].find_one({'_id': current_user.username})
     if player_selections:
@@ -902,7 +906,11 @@ def personal_archive_12():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_12'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_12'].find_one({'_id': current_user.username})
     if player_selections:
@@ -945,7 +953,11 @@ def personal_archive_13():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_13'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_13'].find_one({'_id': current_user.username})
     if player_selections:
@@ -988,7 +1000,11 @@ def personal_archive_14():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_14'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_14'].find_one({'_id': current_user.username})
     if player_selections:
@@ -1031,7 +1047,11 @@ def personal_archive_15():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_15'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_15'].find_one({'_id': current_user.username})
     if player_selections:
@@ -1074,7 +1094,11 @@ def personal_archive_16():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_16'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_16'].find_one({'_id': current_user.username})
     if player_selections:
@@ -1117,7 +1141,11 @@ def personal_archive_17():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_17'].find_one({'_id': 'results'})
-    results = list(results['winners'].keys())
+    winners = []
+    for item in results.items():
+        if item[0] not in ['_id', 'week_number']:
+            winners.append(item[1][1][0])
+    results = winners
 
     player_selections = mongoDB['week_17'].find_one({'_id': current_user.username})
     if player_selections:
@@ -1145,8 +1173,6 @@ def personal_archive_17():
     else:
         flash(category='error', message='You do not have an entry for this week')
         return redirect(url_for('views.home'))
-
-
 
 @auth.route('/contact')
 def contact():
