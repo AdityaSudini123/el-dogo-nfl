@@ -160,124 +160,37 @@ def select_picks():
 @auth.route("/mastersheet")
 @login_required
 def mastersheet():
-    current_week = mongoDB['current_week'].find_one({'_id': 'schedule'})
-    week_number = current_week['week_number']
-    current_week.pop('_id')
-    current_week.pop('week_number')
-
-    results = mongoDB['current_week'].find_one({'_id': 'results'})
-    results.pop('_id')
-    winners = []
-    for result in results.items():
-        winners.append(result[1][1][0])
-
-    team_list = []
-    for item in current_week.items():
-        teams = item[1]
-        team_names = teams[0:2]
-        team_list.append(team_names)
-    new_list = []
-    for item in team_list:
-        for i in item:
-            new_list.append(i)
-    team_list = new_list
-    team_list.append('TOTAL')
-    team_list.append('TIE-BREAKER')
-
-    current_week_documents = mongoDB[f'week_{week_number}'].find()
-    submitted_ids = []
-    user_documents = []
-    for document in current_week_documents:
-        if document['_id'] not in ['schedule', 'results', 'mastersheet']:
-            user_documents.append(document)
-            submitted_ids.append(document['_id'])
-
-    users = []
-    selected_winners = []
-    confidence = []
-    tie_breakers = []
-    for document in user_documents:
-        users.append(document['_id'])
-        selected_winners.append(document['winners'])
-        confidence.append(document['confidence'])
-        tie_breakers.append(document['tie_breaker'])
-
-    player_totals = []
-    for i in range(len(selected_winners)):
-        player_total = 0
-        for team in selected_winners[i]:
-            if team in winners:
-                player_total += int(confidence[i][selected_winners[i].index(team)])
-        player_totals.append(player_total)
-
-    submitted_ids_sorted = sorted(submitted_ids, key=str.lower)
-    submitted_ids_sorted.insert(0, '')
-    user_documents_sorted = sorted(user_documents, key=lambda d: d['_id'].lower())
-
-    table_rows = []
-    for i in range(len(team_list)-2):
-        row = []
-        team = team_list[0:-2][i]
-        row.append(team)
-        for doc in user_documents_sorted:
-            confidence_counter = 0
-            if team in doc['winners']:
-                row.append(doc['confidence'][confidence_counter])
-                confidence_counter += 1
-            else:
-                row.append('0')
-        table_rows.append(row)
-    table_len = int(len(table_rows)/2)
-    id_len = len(submitted_ids_sorted)
-
-    away_teams = table_rows[1::2]
-    home_teams = table_rows[::2]
-    table_rows_new = []
-    for i in range(len(home_teams)):
-        table_rows_new.append([away_teams[i], home_teams[i]])
-
-    player_totals.insert(0, 'TOTAL')
-    tie_breakers.insert(0, 'TIE-BREAKER')
+    masterhseet_exists = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
+    if not masterhseet_exists:
+        flash(category='error', message='Score sheet is not yet available')
+        return redirect(url_for('views.home'))
+    table_rows_new = masterhseet_exists['table_rows_new']
+    table_len = masterhseet_exists['table_len']
+    submitted_ids_sorted = masterhseet_exists['submitted_ids_sorted']
+    id_len = masterhseet_exists['id_len']
+    player_totals = masterhseet_exists['player_totals']
+    tie_breakers = masterhseet_exists['tie_breakers']
+    winning_player = masterhseet_exists['winning_player']
 
     return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
                            user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                           tie_breakers=tie_breakers)
-
-
-    # current_week_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
-    # current_week_results = mongoDB['current_week'].find_one({'_id': 'results'})
-    #
-    # if not current_week_results:
-    #     flash(category='error', message='Mastersheet not available yet')
-    #     return redirect(url_for('views.home'))
-    #
-    # week_number = current_week_schedule['week_number']
-    # entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
-    # if not entry_exists:
-    #     flash('You must select your picks before viewing the score sheet', category='error')
-    #     return redirect(
-    #         url_for("auth.select_picks"))
-    #
-    # weekly_mastersheet = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
-    # weekly_winner = weekly_mastersheet['weekly_winner']
-    # html_code = weekly_mastersheet['html_code']
-    # code_len = len(html_code)
-    # return render_template('mastersheet.html', html_code=html_code, len=code_len, weekly_winner=weekly_winner)
-    # html code:
-    # {% for i in range(0, len) %}
-    #     {{html_code[i] | safe}}
-    # {% endfor %}
-    # <br>
-    # <h3>This weeks winner: {{weekly_winner}}</h3>
+                           tie_breakers=tie_breakers, winning_player=winning_player)
 
 @auth.route('/master_archive_1', methods=['GET', 'POST'])
 @login_required
 def master_archive_1():
     master_exists = mongoDB['week_1'].find_one({'_id': 'mastersheet'})
     if master_exists:
-        html_code = master_exists['html_code']
+        table_rows_new = master_exists['table_rows_new']
+        table_len = master_exists['table_len']
+        submitted_ids_sorted = master_exists['submitted_ids_sorted']
+        id_len = master_exists['id_len']
+        player_totals = master_exists['player_totals']
+        tie_breakers = master_exists['tie_breakers']
 
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
+        return render_template('master_archive_1.html', table_rows_new=table_rows_new, table_len=table_len,
+                               user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
+                               tie_breakers=tie_breakers)
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
         return redirect(url_for('views.home'))
