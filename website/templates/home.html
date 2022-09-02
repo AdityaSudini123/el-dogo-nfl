@@ -4,7 +4,7 @@
 
 <body>
 {% block content %}
-        <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+    <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -45,8 +45,13 @@
         </div>
       </div>
     </nav>
-<center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
-<br>
+    <h1 align="center">Welcome to the 48th annual El Dogo Puzzler</h1>
+    <h2 align="center">Gone with pen and paper, now online!</h2>
+    <br>
+    <br>
+    <center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
+    <br>
+    <br>
 {% endblock %}
 </body>
 

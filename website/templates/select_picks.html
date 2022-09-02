@@ -43,26 +43,20 @@
     </nav>
 
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
-<p align="center"><b>Pick a team to win, and enter a confidence score (between 1 and 16)</b></p>
-
+<p align="center"><b>* Picks are due Tuesday at 8 PM PST *</b></p>
+<p align="center"><b>* Please enter 0 for your non-favored team *</b></p>
+<br>
 <div>
   {% for i in range(0, len) %}
-    <table class="table">
+    <table class="table" border="2">
       <thead>
-        <tr>
-          <th scope="col">game {{i+1}} </th>
+        <tr >
+          <th scope="col"><b>{{game_days[i]}}</b></th>
           <th scope="col">Teams</th>
-          <th scope="col">Confidence</th>
+          <th scope="col">Pick</th>
         </tr>
       </thead>
       <tbody>
-        <tr>
-          <th scope="row">Home Team</th>
-          <td>{{home_teams[i]}}</td>
-          <td>
-            <input form="myForm" name="home_team_{{i}}" id="home_confidence" min="0" max="{{len}}" type="number" placeholder="" required>
-          </td>
-        </tr>
         <tr>
           <th scope="row">Away Team</th>
           <td>{{away_teams[i]}}</td>
@@ -70,11 +64,18 @@
             <input form="myForm" name="away_team_{{i}}" id="away_confidence" min="0" max="{{len}}" type="number" placeholder="" required>
           </td>
         </tr>
+        <tr>
+          <th scope="row">Home Team</th>
+          <td>{{home_teams[i]}}</td>
+          <td>
+            <input form="myForm" name="home_team_{{i}}" id="home_confidence" min="0" max="{{len}}" type="number" placeholder="" required>
+          </td>
+        </tr>
       </tbody>
     </table>
     {% endfor %}
     <form id="myForm" method="post">
-      <p>Enter tie-breaker number here:</p>
+      <p>Enter tie-breaker here:</p>
       <input form="myForm" name="tie_breaker" id="tie_breaker" min="0" max="99" type="number" placeholder="" required>
       <br>
       <br>

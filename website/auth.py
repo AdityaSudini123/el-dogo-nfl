@@ -67,11 +67,7 @@ def sign_up():
         elif len(email) < 4:
             flash("Email is invalid.", category='error')
         else:
-            new_user_mongodb = {
-                "_id": username,
-                "email": email,
-                "password": generate_password_hash(password1, method="sha256")
-            }
+            new_user_mongodb = {"_id": username, "email": email, "password": generate_password_hash(password1, method="sha256")}
             user_data_collection.insert_one(new_user_mongodb)
 
             new_user = User(email=email, username=username, password=generate_password_hash(
@@ -107,30 +103,41 @@ def select_picks():
     weekly_schedule.pop("week_number")
     home_teams = []
     away_teams = []
-    game_day = []
+    game_days = []
     teams = []
     for item in weekly_schedule.items():
         teams.append(item[1])
     for team in teams:
         home_teams.append(team[0])
         away_teams.append(team[1])
+        game_days.append(team[2])
 
+    possible_score = int(float(len(home_teams)/2)*float(1 + len(home_teams)))
     entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
-
+    teams_dict = {}
     if request.method == 'POST':
         if not entry_exists:
             player_entry = {}
             for i in range(len(home_teams)):
                 home_confidence = []
                 away_confidence = []
+                total_score = 0
                 for i in range(len(home_teams)):
-                    home_confidence.append(request.form.get(f'home_team_{i}'))
+                    confidence_home =request.form.get(f'home_team_{i}')
+                    home_confidence.append(confidence_home)
+                    total_score += int(confidence_home)
                     # away_teams[i] refers to the confidence number
-                    away_confidence.append(request.form.get(f'away_team_{i}'))
+                    confidence_away = request.form.get(f'away_team_{i}')
+                    away_confidence.append(confidence_away)
+                    total_score += int(confidence_away)
                     if home_confidence[i] != '0' and away_confidence[i] != '0':
                         flash(category='error', message='You cannot enter a value greater than 0 for both home and away teams')
                         return redirect(url_for('auth.select_picks'))
-                teams_dict = {}
+
+                if total_score > possible_score:
+                    flash(category='error', message='please re-enter your picks')
+                    return redirect(url_for('auth.select_picks'))
+
                 for i in range(len(home_teams)):
                     teams_dict[home_teams[i]] = home_confidence[i]
                     teams_dict[away_teams[i]] = away_confidence[i]
@@ -148,30 +155,120 @@ def select_picks():
             return redirect(url_for('views.home'))
 
     return render_template("select_picks.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
-                             len=len(home_teams), week_number=week_number)
+                             len=len(home_teams), week_number=week_number, game_days=game_days)
 
 @auth.route("/mastersheet")
 @login_required
 def mastersheet():
-    current_week_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
-    current_week_results = mongoDB['current_week'].find_one({'_id': 'results'})
+    current_week = mongoDB['current_week'].find_one({'_id': 'schedule'})
+    week_number = current_week['week_number']
+    current_week.pop('_id')
+    current_week.pop('week_number')
 
-    if not current_week_results:
-        flash(category='error', message='Mastersheet not available yet')
-        return redirect(url_for('views.home'))
+    results = mongoDB['current_week'].find_one({'_id': 'results'})
+    results.pop('_id')
+    winners = []
+    for result in results.items():
+        winners.append(result[1][1][0])
 
-    week_number = current_week_schedule['week_number']
-    entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
-    if not entry_exists:
-        flash('You must select your picks before viewing the score sheet', category='error')
-        return redirect(
-            url_for("auth.select_picks"))
+    team_list = []
+    for item in current_week.items():
+        teams = item[1]
+        team_names = teams[0:2]
+        team_list.append(team_names)
+    new_list = []
+    for item in team_list:
+        for i in item:
+            new_list.append(i)
+    team_list = new_list
+    team_list.append('TOTAL')
+    team_list.append('TIE-BREAKER')
 
-    weekly_mastersheet = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
-    weekly_winner = weekly_mastersheet['weekly_winner']
-    html_code = weekly_mastersheet['html_code']
-    code_len = len(html_code)
-    return render_template('mastersheet.html', html_code=html_code, len=code_len, weekly_winner=weekly_winner)
+    current_week_documents = mongoDB[f'week_{week_number}'].find()
+    submitted_ids = []
+    user_documents = []
+    for document in current_week_documents:
+        if document['_id'] not in ['schedule', 'results', 'mastersheet']:
+            user_documents.append(document)
+            submitted_ids.append(document['_id'])
+
+    users = []
+    selected_winners = []
+    confidence = []
+    tie_breakers = []
+    for document in user_documents:
+        users.append(document['_id'])
+        selected_winners.append(document['winners'])
+        confidence.append(document['confidence'])
+        tie_breakers.append(document['tie_breaker'])
+
+    player_totals = []
+    for i in range(len(selected_winners)):
+        player_total = 0
+        for team in selected_winners[i]:
+            if team in winners:
+                player_total += int(confidence[i][selected_winners[i].index(team)])
+        player_totals.append(player_total)
+
+    submitted_ids_sorted = sorted(submitted_ids, key=str.lower)
+    submitted_ids_sorted.insert(0, '')
+    user_documents_sorted = sorted(user_documents, key=lambda d: d['_id'].lower())
+
+    table_rows = []
+    for i in range(len(team_list)-2):
+        row = []
+        team = team_list[0:-2][i]
+        row.append(team)
+        for doc in user_documents_sorted:
+            confidence_counter = 0
+            if team in doc['winners']:
+                row.append(doc['confidence'][confidence_counter])
+                confidence_counter += 1
+            else:
+                row.append('0')
+        table_rows.append(row)
+    table_len = int(len(table_rows)/2)
+    id_len = len(submitted_ids_sorted)
+
+    away_teams = table_rows[1::2]
+    home_teams = table_rows[::2]
+    table_rows_new = []
+    for i in range(len(home_teams)):
+        table_rows_new.append([away_teams[i], home_teams[i]])
+
+    player_totals.insert(0, 'TOTAL')
+    tie_breakers.insert(0, 'TIE-BREAKER')
+
+    return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
+                           user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
+                           tie_breakers=tie_breakers)
+
+
+    # current_week_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
+    # current_week_results = mongoDB['current_week'].find_one({'_id': 'results'})
+    #
+    # if not current_week_results:
+    #     flash(category='error', message='Mastersheet not available yet')
+    #     return redirect(url_for('views.home'))
+    #
+    # week_number = current_week_schedule['week_number']
+    # entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
+    # if not entry_exists:
+    #     flash('You must select your picks before viewing the score sheet', category='error')
+    #     return redirect(
+    #         url_for("auth.select_picks"))
+    #
+    # weekly_mastersheet = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
+    # weekly_winner = weekly_mastersheet['weekly_winner']
+    # html_code = weekly_mastersheet['html_code']
+    # code_len = len(html_code)
+    # return render_template('mastersheet.html', html_code=html_code, len=code_len, weekly_winner=weekly_winner)
+    # html code:
+    # {% for i in range(0, len) %}
+    #     {{html_code[i] | safe}}
+    # {% endfor %}
+    # <br>
+    # <h3>This weeks winner: {{weekly_winner}}</h3>
 
 @auth.route('/master_archive_1', methods=['GET', 'POST'])
 @login_required
@@ -180,197 +277,6 @@ def master_archive_1():
     if master_exists:
         html_code = master_exists['html_code']
 
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_2', methods=['GET', 'POST'])
-@login_required
-def master_archive_2():
-    master_exists = mongoDB['week_2'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_3', methods=['GET', 'POST'])
-@login_required
-def master_archive_3():
-    master_exists = mongoDB['week_3'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_4', methods=['GET', 'POST'])
-@login_required
-def master_archive_4():
-    master_exists = mongoDB['week_4'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_5', methods=['GET', 'POST'])
-@login_required
-def master_archive_5():
-    master_exists = mongoDB['week_5'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_6', methods=['GET', 'POST'])
-@login_required
-def master_archive_6():
-    master_exists = mongoDB['week_6'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_7', methods=['GET', 'POST'])
-@login_required
-def master_archive_7():
-    master_exists = mongoDB['week_7'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_8', methods=['GET', 'POST'])
-@login_required
-def master_archive_8():
-    master_exists = mongoDB['week_8'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_9', methods=['GET', 'POST'])
-@login_required
-def master_archive_9():
-    master_exists = mongoDB['week_9'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_10', methods=['GET', 'POST'])
-@login_required
-def master_archive_10():
-    master_exists = mongoDB['week_10'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_11', methods=['GET', 'POST'])
-@login_required
-def master_archive_11():
-    master_exists = mongoDB['week_11'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_12', methods=['GET', 'POST'])
-@login_required
-def master_archive_12():
-    master_exists = mongoDB['week_12'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_13', methods=['GET', 'POST'])
-@login_required
-def master_archive_13():
-    master_exists = mongoDB['week_13'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_14', methods=['GET', 'POST'])
-@login_required
-def master_archive_14():
-    master_exists = mongoDB['week_14'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_15', methods=['GET', 'POST'])
-@login_required
-def master_archive_15():
-    master_exists = mongoDB['week_15'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_16', methods=['GET', 'POST'])
-@login_required
-def master_archive_16():
-    master_exists = mongoDB['week_16'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
-
-        return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
-        return redirect(url_for('views.home'))
-
-@auth.route('/master_archive_17', methods=['GET', 'POST'])
-@login_required
-def master_archive_17():
-    master_exists = mongoDB['week_17'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        html_code = master_exists['html_code']
         return render_template('master_archive_1.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='Mastersheet is not available yet. Select a valid week number.')
@@ -390,6 +296,9 @@ def personal_archive_1():
         return redirect(url_for('views.home'))
 
     results = mongoDB['week_1'].find_one({'_id': 'results'})
+    if not results:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
     winners = []
     for item in results.items():
         if item[0] not in ['_id', 'week_number']:
@@ -419,757 +328,6 @@ def personal_archive_1():
         html_code = html_code.split('\n')
 
         return render_template('personal_archive_1.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_2')
-@login_required
-def personal_archive_2():
-    schedule = mongoDB['week_2'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_2'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_2'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_2.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_3')
-@login_required
-def personal_archive_3():
-    schedule = mongoDB['week_3'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-    results = mongoDB['week_3'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_3'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_3.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_4')
-@login_required
-def personal_archive_4():
-    schedule = mongoDB['week_4'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_4'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_4'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_4.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_5')
-@login_required
-def personal_archive_5():
-    schedule = mongoDB['week_5'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_5'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_5'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_5.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_6')
-@login_required
-def personal_archive_6():
-    schedule = mongoDB['week_6'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_6'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_6'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_6.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_7')
-@login_required
-def personal_archive_7():
-    schedule = mongoDB['week_7'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_7'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_7'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_7.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_8')
-@login_required
-def personal_archive_8():
-    schedule = mongoDB['week_8'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_8'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_8'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_8.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_9')
-@login_required
-def personal_archive_9():
-    schedule = mongoDB['week_9'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_9'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_9'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_9.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_10')
-@login_required
-def personal_archive_10():
-    schedule = mongoDB['week_10'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_10'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_10'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_10.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_11')
-@login_required
-def personal_archive_11():
-    schedule = mongoDB['week_11'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_11'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_11'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_11.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_12')
-@login_required
-def personal_archive_12():
-    schedule = mongoDB['week_12'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_12'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_12'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_12.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_13')
-@login_required
-def personal_archive_13():
-    schedule = mongoDB['week_13'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_13'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_13'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_13.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_14')
-@login_required
-def personal_archive_14():
-    schedule = mongoDB['week_14'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_14'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_14'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_14.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_15')
-@login_required
-def personal_archive_15():
-    schedule = mongoDB['week_15'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_15'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_15'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_15.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_16')
-@login_required
-def personal_archive_16():
-    schedule = mongoDB['week_16'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_16'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_16'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_16.html', html_code=html_code, len=len(html_code))
-    else:
-        flash(category='error', message='You do not have an entry for this week')
-        return redirect(url_for('views.home'))
-
-@auth.route('/personal_archive_17')
-@login_required
-def personal_archive_17():
-    schedule = mongoDB['week_17'].find_one({'_id': 'schedule'})
-    all_games = []
-    if schedule:
-        for item in schedule.items():
-            if 'game' in item[0]:
-                all_games.append(item[1])
-    else:
-        flash(category='error', message='This week is not available to view yet')
-        return redirect(url_for('views.home'))
-
-    results = mongoDB['week_17'].find_one({'_id': 'results'})
-    winners = []
-    for item in results.items():
-        if item[0] not in ['_id', 'week_number']:
-            winners.append(item[1][1][0])
-    results = winners
-
-    player_selections = mongoDB['week_17'].find_one({'_id': current_user.username})
-    if player_selections:
-        teams_selected = player_selections['winners']
-        confidence = player_selections['confidence']
-        pd.set_option('display.max_columns', None)
-        myDF = pd.DataFrame()
-        myDF['Matchup'] = all_games
-        myDF['Your selection'] = teams_selected
-        myDF['Confidence Assigned'] = confidence
-        myDF['Outcome'] = results
-        points_collected = []
-        total = 0
-        for i in range(len(teams_selected)):
-            if teams_selected[i] == results[i]:
-                total += int(confidence[i])
-                points_collected.append(f'+{confidence[i]}')
-            else:
-                points_collected.append('+0')
-        myDF['Points collected'] = points_collected
-        html_code = myDF.to_html()
-        html_code = html_code.split('\n')
-
-        return render_template('personal_archive_17.html', html_code=html_code, len=len(html_code))
     else:
         flash(category='error', message='You do not have an entry for this week')
         return redirect(url_for('views.home'))
