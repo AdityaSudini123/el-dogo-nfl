@@ -142,22 +142,26 @@ def select_picks():
                         total_score += int(confidence_away)
 
                 if len(all_confidence) != len(set(all_confidence)):
-                    flash(category='error', message='Each pick can be used only once')
+                    flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
+                                          'picks are entered correctly.')
                     return redirect(url_for('auth.select_picks'))
 
                 for i in range(len(home_confidence)):
                     if home_confidence[i] == '0':
                         if away_confidence[i] == '0':
                             flash(category='error',
-                                  message='Warning')
+                                  message='Your picks have not been submitted. Please review the rules and ensure your '
+                                          'picks are entered correctly.')
                             return redirect(url_for('auth.select_picks'))
                     elif home_confidence[i] != '0':
                         if away_confidence[i] != '0':
                             flash(category='error',
-                                  message=' Warning 2')
+                                  message='Your picks have not been submitted. Please review the rules and ensure your '
+                                          'picks are entered correctly.')
                             return redirect(url_for('auth.select_picks'))
                 if total_score > possible_score:
-                    flash(category='error', message='please re-enter your picks')
+                    flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
+                                          'picks are entered correctly.')
                     return redirect(url_for('auth.select_picks'))
 
                 for i in range(len(home_teams)):
