@@ -51,24 +51,24 @@
     <table class="table" border="2">
       <thead>
         <tr >
-          <th scope="col"><b>{{game_days[i]}}</b></th>
+          <th scope="col">{{game_days[i]}}</th>
           <th scope="col">Teams</th>
           <th scope="col">Pick</th>
         </tr>
       </thead>
       <tbody>
         <tr>
-          <th scope="row">Away Team</th>
-          <td>{{away_teams[i]}}</td>
+          <th style="font-weight:normal" scope="row">Away Team</th>
+          <td><b>{{away_teams[i]}}</b></td>
           <td>
-            <input form="myForm" name="away_team_{{i}}" id="away_confidence" min="0" max="{{len}}" type="number" placeholder="" required>
+            <input form="myForm" name="away_team_{{i}}" id="away_confidence" min="0" max="{{len}}" type="number" placeholder="">
           </td>
         </tr>
         <tr>
-          <th scope="row">Home Team</th>
-          <td>{{home_teams[i]}}</td>
+          <th style="font-weight:normal" scope="row">Home Team</th>
+          <td><b>{{home_teams[i]}}</b></td>
           <td>
-            <input form="myForm" name="home_team_{{i}}" id="home_confidence" min="0" max="{{len}}" type="number" placeholder="" required>
+            <input form="myForm" name="home_team_{{i}}" id="home_confidence" min="0" max="{{len}}" type="number" placeholder="">
           </td>
         </tr>
       </tbody>

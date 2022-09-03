@@ -38,7 +38,7 @@ def login():
                 login_user(user_exists, remember=True)
                 return redirect(url_for('views.home'))
         else:
-            flash('Email does not exist.', category='error')
+            flash('Username does not exist.', category='error')
 
     return render_template("login.html")
 
@@ -112,28 +112,49 @@ def select_picks():
         away_teams.append(team[1])
         game_days.append(team[2])
 
-    possible_score = int(float(len(home_teams)/2)*float(1 + len(home_teams)))
+    possible_score = int(float(len(home_teams) / 2) * float(1 + len(home_teams)))
     entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
     teams_dict = {}
     if request.method == 'POST':
         if not entry_exists:
             player_entry = {}
             for i in range(len(home_teams)):
+                all_confidence = []
                 home_confidence = []
                 away_confidence = []
                 total_score = 0
                 for i in range(len(home_teams)):
-                    confidence_home =request.form.get(f'home_team_{i}')
-                    home_confidence.append(confidence_home)
-                    total_score += int(confidence_home)
+                    confidence_home = request.form.get(f'home_team_{i}')
+                    if confidence_home == '':
+                        home_confidence.append('0')
+                    else:
+                        home_confidence.append(confidence_home)
+                        all_confidence.append(confidence_home)
+                        total_score += int(confidence_home)
                     # away_teams[i] refers to the confidence number
                     confidence_away = request.form.get(f'away_team_{i}')
-                    away_confidence.append(confidence_away)
-                    total_score += int(confidence_away)
-                    if home_confidence[i] != '0' and away_confidence[i] != '0':
-                        flash(category='error', message='You cannot enter a value greater than 0 for both home and away teams')
-                        return redirect(url_for('auth.select_picks'))
+                    if confidence_away == '':
+                        away_confidence.append('0')
+                    else:
+                        away_confidence.append(confidence_away)
+                        all_confidence.append(confidence_away)
+                        total_score += int(confidence_away)
 
+                if len(all_confidence) != len(set(all_confidence)):
+                    flash(category='error', message='Each pick can be used only once')
+                    return redirect(url_for('auth.myfunction'))
+
+                for i in range(len(home_confidence)):
+                    if home_confidence[i] == '0':
+                        if away_confidence[i] == '0':
+                            flash(category='error',
+                                  message='Warning')
+                            return redirect(url_for('auth.myfunction'))
+                    elif home_confidence[i] != '0':
+                        if away_confidence[i] != '0':
+                            flash(category='error',
+                                  message=' Warning 2')
+                            return redirect(url_for('auth.myfunction'))
                 if total_score > possible_score:
                     flash(category='error', message='please re-enter your picks')
                     return redirect(url_for('auth.select_picks'))
@@ -155,7 +176,7 @@ def select_picks():
             return redirect(url_for('views.home'))
 
     return render_template("select_picks.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
-                             len=len(home_teams), week_number=week_number, game_days=game_days)
+                           len=len(home_teams), week_number=week_number, game_days=game_days)
 
 @auth.route("/mastersheet")
 @login_required
