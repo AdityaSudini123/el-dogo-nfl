@@ -108,6 +108,7 @@ def select_picks():
     for item in weekly_schedule.items():
         teams.append(item[1])
     for team in teams:
+        print(team)
         home_teams.append(team[0])
         away_teams.append(team[1])
         game_days.append(team[2])
@@ -142,19 +143,19 @@ def select_picks():
 
                 if len(all_confidence) != len(set(all_confidence)):
                     flash(category='error', message='Each pick can be used only once')
-                    return redirect(url_for('auth.myfunction'))
+                    return redirect(url_for('auth.select_picks'))
 
                 for i in range(len(home_confidence)):
                     if home_confidence[i] == '0':
                         if away_confidence[i] == '0':
                             flash(category='error',
                                   message='Warning')
-                            return redirect(url_for('auth.myfunction'))
+                            return redirect(url_for('auth.select_picks'))
                     elif home_confidence[i] != '0':
                         if away_confidence[i] != '0':
                             flash(category='error',
                                   message=' Warning 2')
-                            return redirect(url_for('auth.myfunction'))
+                            return redirect(url_for('auth.select_picks'))
                 if total_score > possible_score:
                     flash(category='error', message='please re-enter your picks')
                     return redirect(url_for('auth.select_picks'))
@@ -184,7 +185,7 @@ def select_picks():
 def mastersheet():
     masterhseet_exists = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
     if not masterhseet_exists:
-        flash(category='error', message='Score sheet is not yet available')
+        flash(category='error', message='Mastersheet is not yet available')
         return redirect(url_for('views.home'))
     table_rows_new = masterhseet_exists['table_rows_new']
     table_len = masterhseet_exists['table_len']
