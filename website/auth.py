@@ -170,13 +170,14 @@ def select_picks():
             new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
                          "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker}
             mongoDB[f'week_{week_number}'].insert_one(new_entry)
+            flash(category='success', message='Congrats! Your picks for the week have been submitted')
             return redirect(url_for('views.home'))
         else:
             flash('You have already made your picks', category='error')
             return redirect(url_for('views.home'))
 
     return render_template("select_picks.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
-                           len=len(home_teams), week_number=week_number, game_days=game_days)
+                           len=len(home_teams), week_number=week_number, game_days=game_days, possible_score=possible_score)
 
 @auth.route("/mastersheet")
 @login_required

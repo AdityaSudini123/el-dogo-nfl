@@ -43,8 +43,7 @@
     </nav>
 
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
-<p align="center"><b>* Picks are due Tuesday at 8 PM PST *</b></p>
-<p align="center"><b>* Please enter 0 for your non-favored team *</b></p>
+<p align="center"><b>* Picks are due Tuesday at 7 PM PST *</b></p>
 <br>
 <div>
   {% for i in range(0, len) %}
@@ -74,12 +73,13 @@
       </tbody>
     </table>
     {% endfor %}
+    <p><b>* Please ensure that the sum of your picks equals {{possible_score}} *</b></p>
     <form id="myForm" method="post">
       <p>Enter tie-breaker here:</p>
       <input form="myForm" name="tie_breaker" id="tie_breaker" min="0" max="99" type="number" placeholder="" required>
       <br>
       <br>
-      <input form="myForm" type="submit">
+      <input type="submit" value="submit">
       <br>
       <br>
     </form>
