@@ -37,6 +37,8 @@ def login():
                 flash(f'Logged in as {username}', category='success')
                 login_user(user_exists, remember=True)
                 return redirect(url_for('views.home'))
+            if not check_password_hash(user_exists.password, password):
+                flash(category='error', message='Incorrect Password')
         else:
             flash('Username does not exist.', category='error')
 
