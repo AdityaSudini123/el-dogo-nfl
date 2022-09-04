@@ -32,6 +32,7 @@ def login():
         username = request.form.get("username")
 
         user_exists = User.query.filter_by(username=username).first()
+        user_exists_in_mongo = mongoDB['user_data'].find_one({'_id': username})
         if user_exists:
             if check_password_hash(user_exists.password, password):
                 flash(f'Logged in as {username}', category='success')
@@ -61,13 +62,13 @@ def sign_up():
         elif username_exists:
             flash('Username is already in use.', category='error')
         elif password1 != password2:
-            flash('Password don\'t match!', category='error')
+            flash('Passwords don\'t match!', category='error')
         elif len(username) < 2:
             flash('Username is too short.', category='error')
         elif len(password1) < 6:
             flash('Password is too short.', category='error')
         elif len(email) < 4:
-            flash("Email is invalid.", category='error')
+            return render_template("signup.html")
         else:
             new_user_mongodb = {"_id": username, "email": email, "password": generate_password_hash(password1, method="sha256")}
             user_data_collection.insert_one(new_user_mongodb)
@@ -276,4 +277,10 @@ def personal_archive_1():
 
 @auth.route('/contact')
 def contact():
+    query = User.query.all()
+    for item in query:
+        print(item)
+
     return render_template('contact.html')
+
+
