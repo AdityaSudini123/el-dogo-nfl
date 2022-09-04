@@ -40,8 +40,20 @@ def login():
                 return redirect(url_for('views.home'))
             if not check_password_hash(user_exists.password, password):
                 flash(category='error', message='Incorrect Password')
-        else:
-            flash('Username does not exist.', category='error')
+        elif not user_exists:
+            if user_exists_in_mongo:
+                if check_password_hash(user_exists_in_mongo['password'], password):
+                    new_user = User(email=email, username=username, password=generate_password_hash(
+                        password, method='sha256'))
+                    db.session.add(new_user)
+                    db.session.commit()
+                    login_user(new_user, remember=True)
+                    flash(category='success', message=f'Logged in as {username}')
+                    return redirect(url_for('views.home'))
+                else:
+                    flash(category='error', message='Your password was entered incorrectly. Please try again.')
+            else:
+                flash('Username does not exist.', category='error')
 
     return render_template("login.html")
 
@@ -277,10 +289,6 @@ def personal_archive_1():
 
 @auth.route('/contact')
 def contact():
-    query = User.query.all()
-    for item in query:
-        print(item)
-
     return render_template('contact.html')
 
 
