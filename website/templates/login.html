@@ -18,6 +18,24 @@
       </div>
     </div>
 </nav>
+{% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+    {% for category, message in messages %}
+    {% if category == "error" %}
+    <div class="alert alert-danger alter-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% else %}
+    <div class="alert alert-success alter-dismissible fade show" role="alert">
+      {{ message }}
+      <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+    {% endif %}
+
+    {% endfor %}
+  {% endif %}
+{% endwith %}
 <form method="POST">
   <h3 align="center">Login</h3>
   <div class="form-group">

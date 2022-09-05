@@ -41,6 +41,24 @@
         </div>
       </div>
     </nav>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        {% if category == "error" %}
+        <div class="alert alert-danger alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <div class="alert alert-success alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% endif %}
+
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
 <p align="center"><b>* Picks are due Tuesday at 7 PM PST *</b></p>

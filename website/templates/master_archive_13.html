@@ -1,8 +1,10 @@
 {% extends "base.html" %}
-{% block title %}PERSONAL ARCHIVES{% endblock %}
+{% block title %}ARCHIVES{% endblock %}
+
+
 <body>
 {% block content %}
-<nav class="navbar navbar-expand-lg navbar-dark bg-dark">
+  <nav class="navbar navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -43,37 +45,37 @@
         </div>
       </div>
     </nav>
-<br>
-    <h2 align="center">Week 1 player archive</h2>
-<br>
-    <div>
-      {% for i in range(0, len) %}
-        <table class="table" border="2">
-          <thead>
-            <tr >
-              <th scope="col">{{game_days[i]}}</th>
-              <th scope="col">Matchup</th>
-              <th scope="col">Your Pick</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th style="font-weight:normal" scope="row">Away Team</th>
-              <td><b>{{away_teams[i]}}</b></td>
-              <td><b>{{away_confidence[i]}}</b></td>
-            </tr>
-            <tr>
-              <th style="font-weight:normal" scope="row">Home Team</th>
-              <td><b>{{home_teams[i]}}</b></td>
-              <td><b>{{home_confidence[i]}}</b></td>
-            </tr>
-          </tbody>
-        </table>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% for i in range(id_len) %}
+          <th scope="col">{{user_ids[i]}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      {% for teams in table_rows_new %}
+      <tbody>
+        {% for team in teams %}
+          <tr>
+            <th scope="row">{{team[0]}}</th>
+            <td>{{team[1]}}</td>
+            <td>{{team[2]}}</td>
+            <td>{{team[3]}}</td>
+            <td>{{team[4]}}</td>
+          </tr>
         {% endfor %}
-        <h5>Your tie-breaker score: {{tie_breaker}}</h5>
-      <br>
-      <br>
-    </div>
+      {% endfor %}
+          <tr>
+            {% for i in range(id_len)%}
+              <th scope="row">{{player_totals[i]}}</th>
+            {% endfor %}
+          </tr>
+          <tr>
+            {% for i in range(id_len)%}
+              <th scope="row">{{tie_breakers[i]}}</th>
+            {% endfor %}
+          </tr>
+      </tbody>
+    </table>
 {% endblock %}
-
 </body>
