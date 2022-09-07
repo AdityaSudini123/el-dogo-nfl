@@ -1,4 +1,6 @@
 import csv
+import datetime
+
 import numpy
 from pymongo import MongoClient
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
@@ -69,14 +71,15 @@ def sign_up():
         email_exists = User.query.filter_by(email=email).first()
         username_exists = User.query.filter_by(username=username).first()
         user_mongo = mongoDB['user_data'].find_one({'_id': username})
-        username_mongo = user_mongo['_id']
-        email_mongo = user_mongo['email']
+
         if email_exists:
-            if email_mongo:
-                flash('Email is already in use.', category='error')
+            if user_mongo:
+                if user_mongo['email'] == email:
+                    flash('Email is already in use.', category='error')
         elif username_exists:
-            if username_mongo:
-                flash('Username is already in use.', category='error')
+            if user_mongo:
+                if user_mongo['_id'] == username:
+                    flash('Username is already in use.', category='error')
         elif password1 != password2:
             flash('Passwords don\'t match!', category='error')
         elif len(username) < 2:
