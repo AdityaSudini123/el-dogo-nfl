@@ -114,7 +114,8 @@ def rules():
 @auth.route("/select_picks", methods=['GET', 'POST'])
 @login_required
 def select_picks():
-    return render_template('picks_closed.html')
+    flash(category='error', message='Picks are now closed')
+    return redirect(url_for('views.home'))
     # weekly_schedule = mongoDB['current_week'].find_one({'_id': 'schedule'})
     # if not weekly_schedule:
     #     flash(category='error', message='Schedule is not available yet')
