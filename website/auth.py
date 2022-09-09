@@ -210,20 +210,31 @@ def select_picks():
 @login_required
 def mastersheet():
     masterhseet_exists = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
-    if not masterhseet_exists:
-        flash(category='error', message='Mastersheet is not yet available')
-        return redirect(url_for('views.home'))
-    table_rows_new = masterhseet_exists['table_rows_new']
-    table_len = masterhseet_exists['table_len']
-    submitted_ids_sorted = masterhseet_exists['submitted_ids_sorted']
-    id_len = masterhseet_exists['id_len']
-    player_totals = masterhseet_exists['player_totals']
-    tie_breakers = masterhseet_exists['tie_breakers']
-    winning_player = masterhseet_exists['winning_player']
+    prelim_master_exists = mongoDB['current_week'].find_one({'_id': 'prelim_mastersheet'})
 
-    return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
+    if  masterhseet_exists:
+        table_rows_new = masterhseet_exists['table_rows_new']
+        table_len = masterhseet_exists['table_len']
+        submitted_ids_sorted = masterhseet_exists['submitted_ids_sorted']
+        id_len = masterhseet_exists['id_len']
+        player_totals = masterhseet_exists['player_totals']
+        tie_breakers = masterhseet_exists['tie_breakers']
+        winning_player = masterhseet_exists['winning_player']
+        return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
                            user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
                            tie_breakers=tie_breakers, winning_player=winning_player)
+    elif prelim_master_exists:
+        table_rows_new = prelim_master_exists['table_rows_new']
+        row_len = len(table_rows_new[0][0])
+        submitted_ids_sorted = prelim_master_exists['user_ids']
+        submitted_ids_sorted.insert(0, "")
+
+        id_len = prelim_master_exists['id_len']
+        return render_template('prelim_mastersheet.html', table_rows_new=table_rows_new,
+                           user_ids=submitted_ids_sorted, id_len=id_len, row_len=row_len)
+    else:
+        flash(category='error', message='Mastersheet is not yet available')
+        return redirect(url_for('views.home'))
 
 @auth.route('/contact')
 def contact():
