@@ -227,7 +227,7 @@ def mastersheet():
         table_rows_new = prelim_master_exists['table_rows_new']
         row_len = len(table_rows_new[0][0])
         submitted_ids_sorted = prelim_master_exists['user_ids']
-        submitted_ids_sorted.insert(0, "")
+        submitted_ids_sorted.insert(0, f'Week 1')
 
         id_len = prelim_master_exists['id_len']
         return render_template('prelim_mastersheet.html', table_rows_new=table_rows_new,
