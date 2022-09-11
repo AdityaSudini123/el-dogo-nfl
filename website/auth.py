@@ -206,35 +206,35 @@ def select_picks():
     return render_template("select_picks.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
                            len=len(home_teams), week_number=week_number, game_days=game_days, possible_score=possible_score)
 
-@auth.route("/mastersheet")
-@login_required
-def mastersheet():
-    masterhseet_exists = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
-    prelim_master_exists = mongoDB['current_week'].find_one({'_id': 'prelim_mastersheet'})
-
-    if  masterhseet_exists:
-        table_rows_new = masterhseet_exists['table_rows_new']
-        table_len = masterhseet_exists['table_len']
-        submitted_ids_sorted = masterhseet_exists['submitted_ids_sorted']
-        id_len = masterhseet_exists['id_len']
-        player_totals = masterhseet_exists['player_totals']
-        tie_breakers = masterhseet_exists['tie_breakers']
-        winning_player = masterhseet_exists['winning_player']
-        return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
-                           user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                           tie_breakers=tie_breakers, winning_player=winning_player)
-    elif prelim_master_exists:
-        table_rows_new = prelim_master_exists['table_rows_new']
-        row_len = len(table_rows_new[0][0])
-        submitted_ids_sorted = prelim_master_exists['user_ids']
-        submitted_ids_sorted.insert(0, f'Week 1')
-
-        id_len = prelim_master_exists['id_len']
-        return render_template('prelim_mastersheet.html', table_rows_new=table_rows_new,
-                           user_ids=submitted_ids_sorted, id_len=id_len, row_len=row_len)
-    else:
-        flash(category='error', message='Mastersheet is not yet available')
-        return redirect(url_for('views.home'))
+# @auth.route("/mastersheet")
+# @login_required
+# def mastersheet():
+#     masterhseet_exists = mongoDB['current_week'].find_one({'_id': 'mastersheet'})
+#     prelim_master_exists = mongoDB['current_week'].find_one({'_id': 'prelim_mastersheet'})
+#
+#     if  masterhseet_exists:
+#         table_rows_new = masterhseet_exists['table_rows_new']
+#         table_len = masterhseet_exists['table_len']
+#         submitted_ids_sorted = masterhseet_exists['submitted_ids_sorted']
+#         id_len = masterhseet_exists['id_len']
+#         player_totals = masterhseet_exists['player_totals']
+#         tie_breakers = masterhseet_exists['tie_breakers']
+#         winning_player = masterhseet_exists['winning_player']
+#         return render_template('mastersheet.html', table_rows_new=table_rows_new, table_len=table_len,
+#                            user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
+#                            tie_breakers=tie_breakers, winning_player=winning_player)
+#     elif prelim_master_exists:
+#         table_rows_new = prelim_master_exists['table_rows_new']
+#         row_len = len(table_rows_new[0][0])
+#         submitted_ids_sorted = prelim_master_exists['user_ids']
+#         submitted_ids_sorted.insert(0, f'Week 1')
+#
+#         id_len = prelim_master_exists['id_len']
+#         return render_template('prelim_mastersheet.html', table_rows_new=table_rows_new,
+#                            user_ids=submitted_ids_sorted, id_len=id_len, row_len=row_len)
+#     else:
+#         flash(category='error', message='Mastersheet is not yet available')
+#         return redirect(url_for('views.home'))
 
 @auth.route('/contact')
 def contact():
@@ -1259,3 +1259,25 @@ def personal_archive_17():
     return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
                            game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
                            tie_breaker=tie_breaker)
+
+@auth.route("/mastersheet")
+@login_required
+def mastersheet():
+    prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master2'})
+
+    table_rows = prelim_exists['table_rows']
+    column_1 = []
+    table_rows_final = []
+    for row in table_rows:
+        column_1.append(row[0])
+        table_rows_final.append(row[1:])
+
+    column_headers = table_rows_final[0]
+    table_rows_final = table_rows_final[1:]
+    column_1 = column_1[1:]
+    column_headers.insert(0, 'Week 1')
+    tie_breaker_index = str(len(column_1) - 1)
+
+    return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
+                           row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                           column_headers=column_headers, tie_breaker_index=tie_breaker_index)
