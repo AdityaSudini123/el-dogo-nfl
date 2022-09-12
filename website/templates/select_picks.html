@@ -41,6 +41,9 @@
         </div>
       </div>
     </nav>
+    <br>
+    <br>
+    <br>
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -59,9 +62,7 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-<br>
-<br>
-<br>
+
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
 <p align="center"><b>* Picks are due Tuesday at 7 PM PST *</b></p>
 <br>
