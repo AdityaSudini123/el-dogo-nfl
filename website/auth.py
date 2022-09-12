@@ -33,8 +33,32 @@ def login():
         password = request.form.get("password")
         username = request.form.get("username")
 
-        user_exists = User.query.filter_by(username=username).first()
         user_exists_in_mongo = mongoDB['user_data'].find_one({'_id': username})
+        if user_exists_in_mongo:
+            user_password = user_exists_in_mongo['password']
+            user_exists = User.query.filter_by(username=username).first()
+            if user_exists:
+                if check_password_hash(user_password, password):
+                    flash(f'Logged in as {username}', category='success')
+                    login_user(user_exists, remember=True)
+                    return redirect(url_for('views.home'))
+                if not check_password_hash(user_exists.password, password):
+                    flash(category='error', message='Incorrect Password')
+            elif not user_exists:
+                if check_password_hash(user_exists_in_mongo['password'], password):
+                    new_user = User(email=email, username=username, password=generate_password_hash(
+                        password, method='sha256'))
+                    db.session.add(new_user)
+                    db.session.commit()
+                    login_user(new_user, remember=True)
+                    flash(category='success', message=f'Logged in as {username}')
+                    return redirect(url_for('views.home'))
+                else:
+                    flash(category='error', message='Your password was entered incorrectly. Please try again.')
+        else:
+            flash('Username does not exist.', category='error')
+
+
         if user_exists:
             if check_password_hash(user_exists.password, password):
                 flash(f'Logged in as {username}', category='success')
@@ -1281,3 +1305,45 @@ def mastersheet():
     return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
                            row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                            column_headers=column_headers, tie_breaker_index=tie_breaker_index)
+
+@auth.route('/forgot_password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        email = request.form.get('email')
+        username = request.form.get('username')
+        user_exists = mongoDB['user_data'].find_one({'_id': username})
+        if user_exists:
+            if user_exists['email'] == email:
+                flash(category='success', message='User validated')
+                return redirect(url_for('auth.change_password'))
+            else:
+                flash(category='error', message='Email does not exist')
+                return render_template('forgot_password.html')
+        else:
+            flash(category='error', message='Username does not exist')
+            return render_template('login.html')
+    return render_template('forgot_password.html')
+
+@auth.route('/change_password', methods=['GET', 'POST'])
+def change_password():
+    if request.method == 'POST':
+        username = request.form.get('username')
+        new_password = request.form.get('new_password')
+        confirm_password = request.form.get('confirm_password')
+
+        if len(new_password) < 7:
+            flash(category='error', message='Password must be longer than 7 characters')
+            return redirect(url_for('change_password'))
+        elif new_password != confirm_password:
+            flash(category='error', message='Passwords do not match')
+        else:
+            password = generate_password_hash(password=new_password, method='sha256')
+            update = {"$set": {"password": password}}
+            mongoDB['user_data'].update_one({'_id': username}, update=update)
+            flash(category='success', message='Password succesfully changed')
+            return redirect(url_for('auth.login'))
+    return render_template('change_password.html')
+
+
+
+
