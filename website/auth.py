@@ -1288,23 +1288,58 @@ def personal_archive_17():
 @login_required
 def mastersheet():
     prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master2'})
+    final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
 
-    table_rows = prelim_exists['table_rows']
-    column_1 = []
-    table_rows_final = []
-    for row in table_rows:
-        column_1.append(row[0])
-        table_rows_final.append(row[1:])
+    if prelim_exists:
+        table_rows = prelim_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
 
-    column_headers = table_rows_final[0]
-    table_rows_final = table_rows_final[1:]
-    column_1 = column_1[1:]
-    column_headers.insert(0, 'Week 1')
-    tie_breaker_index = str(len(column_1) - 1)
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-1]]
+        table_footer[0].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-1]
+        column_1 = column_1[1:-1]
+        column_headers.insert(0, 'Week 1')
+        tie_breaker_index = str(len(column_1) - 1)
 
-    return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
-                           row_len=len(table_rows[0]), table_rows_final=table_rows_final,
-                           column_headers=column_headers, tie_breaker_index=tie_breaker_index)
+        return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index, table_footer=table_footer)
+    elif final_exists:
+        table_rows = final_exists['table_rows']
+
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 1')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1]}'
+
+        return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='mastersheet is not available yet')
+        return redirect(url_for('views.home'))
 
 @auth.route('/forgot_password', methods=['GET', 'POST'])
 def forgot_password():

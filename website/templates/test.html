@@ -128,18 +128,28 @@
             <th align="center" class="headcol">{{column_1[i]}}</th>
           {% endif %}
       {% for k in range(row_len) %}
-              {% if i == column_1_len - 1 %}
-                <td align="center" class="short bg-dark text-white">{{table_rows_final[i][k]}}</td>
-              {% elif i % 3 == 0 %}
+              {% if i % 3 == 0 %}
                 <td align="center" class="short bg-dark text-black">{{table_rows_final[i][k]}}</td>
               {% else %}
-                <td align="center" class="short">{{table_rows_final[i][k]}}</td>
+                <td align="center" class="short bg-white text-black">{{table_rows_final[i][k]}}</td>
               {% endif %}
           {% endfor %}
         </tr>
       {% endfor %}
+      <tfoot>
+        {% for footer in table_footer %}
+            <tr class="short bg-warning text-black">
+                {% for i in footer %}
+                    <td align="center" class="short bg-warning text-black">{{i}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+      </tfoot>
       </table>
     </div>
+    <h3 align="center">{{message}}</h3>
+    <br>
+    <br>
 </body>
 {% endblock %}
 </html>
