@@ -1287,7 +1287,7 @@ def personal_archive_17():
 @auth.route("/mastersheet")
 @login_required
 def mastersheet():
-    prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master2'})
+    prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master'})
     final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
 
     if prelim_exists:
@@ -1331,7 +1331,7 @@ def mastersheet():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1]}'
+            message = f'This weeks winner is {result[1][0]}'
 
         return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
