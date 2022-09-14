@@ -268,18 +268,35 @@ def contact():
 @auth.route('/master_archive_1', methods=['GET', 'POST'])
 @login_required
 def master_archive_1():
-    master_exists = mongoDB['week_1'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        table_rows_new = master_exists['table_rows_new']
-        table_len = master_exists['table_len']
-        submitted_ids_sorted = master_exists['submitted_ids_sorted']
-        id_len = master_exists['id_len']
-        player_totals = master_exists['player_totals']
-        tie_breakers = master_exists['tie_breakers']
+    final_exists = mongoDB['week_1'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
 
-        return render_template('master_archive_1.html', table_rows_new=table_rows_new, table_len=table_len,
-                               user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                               tie_breakers=tie_breakers)
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 1')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+
+        return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
     else:
         flash(category='error', message='Mastersheet is not available yet.')
         return redirect(url_for('views.home'))
@@ -1312,7 +1329,6 @@ def mastersheet():
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index, table_footer=table_footer)
     elif final_exists:
         table_rows = final_exists['table_rows']
-
         column_1 = []
         table_rows_final = []
         for row in table_rows:
@@ -1332,7 +1348,7 @@ def mastersheet():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]}'
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
 
         return render_template('test.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
