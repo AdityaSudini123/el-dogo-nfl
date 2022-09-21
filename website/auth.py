@@ -222,7 +222,7 @@ def select_picks():
                         winners_dict[item[0]] = item[1]
             tie_breaker = request.form.get('tie_breaker')
             new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
-                         "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker}
+                         "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker, 'time': datetime.datetime.now()}
             mongoDB[f'week_{week_number}'].insert_one(new_entry)
             flash(category='success', message='Congrats! Your picks for the week have been submitted')
             return redirect(url_for('views.home'))
