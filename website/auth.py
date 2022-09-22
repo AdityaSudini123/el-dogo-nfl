@@ -33,10 +33,10 @@ def login():
         password = request.form.get("password")
         username = request.form.get("username")
 
+        user_exists = User.query.filter_by(username=username).first()
         user_exists_in_mongo = mongoDB['user_data'].find_one({'_id': username})
         if user_exists_in_mongo:
             user_password = user_exists_in_mongo['password']
-            user_exists = User.query.filter_by(username=username).first()
             if user_exists:
                 if check_password_hash(user_password, password):
                     flash(f'Logged in as {username}', category='success')
@@ -55,30 +55,16 @@ def login():
                     return redirect(url_for('views.home'))
                 else:
                     flash(category='error', message='Your password was entered incorrectly. Please try again.')
-        else:
-            flash('Username does not exist.', category='error')
-
-        if user_exists:
+        elif user_exists:
             if check_password_hash(user_exists.password, password):
                 flash(f'Logged in as {username}', category='success')
                 login_user(user_exists, remember=True)
                 return redirect(url_for('views.home'))
             if not check_password_hash(user_exists.password, password):
                 flash(category='error', message='Incorrect Password')
-        elif not user_exists:
-            if user_exists_in_mongo:
-                if check_password_hash(user_exists_in_mongo['password'], password):
-                    new_user = User(email=email, username=username, password=generate_password_hash(
-                        password, method='sha256'))
-                    db.session.add(new_user)
-                    db.session.commit()
-                    login_user(new_user, remember=True)
-                    flash(category='success', message=f'Logged in as {username}')
-                    return redirect(url_for('views.home'))
-                else:
-                    flash(category='error', message='Your password was entered incorrectly. Please try again.')
-            else:
-                flash('Username does not exist.', category='error')
+        else:
+            flash('Username does not exist.', category='error')
+
     return render_template("login.html")
 
 
