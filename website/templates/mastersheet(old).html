@@ -1,6 +1,5 @@
-{% extends "base.html" %}
-{% block title %}PERSONAL ARCHIVES{% endblock %}
-<body>
+{% extends 'base.html' %}
+
 {% block content %}
 <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
@@ -43,7 +42,7 @@
         </div>
       </div>
     </nav>
-{% with messages = get_flashed_messages(with_categories=True) %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
         {% for category, message in messages %}
         {% if category == "error" %}
@@ -64,42 +63,41 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-<br>
-<br>
-<br>
     <div class="container bg-warning">
-      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+      <p class="text-black">Currently logged in as {{current_user}}</p>
     </div>
-    <h2 align="center">Week 1 player archive</h2>
-<br>
-    <div>
-      {% for i in range(0, len) %}
-        <table class="table" border="2">
-          <thead>
-            <tr >
-              <th scope="col">{{game_days[i]}}</th>
-              <th scope="col">Matchup</th>
-              <th scope="col">Your Pick</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr>
-              <th style="font-weight:normal" scope="row">Away Team</th>
-              <td><b>{{away_teams[i]}}</b></td>
-              <td><b>{{away_confidence[i]}}</b></td>
-            </tr>
-            <tr>
-              <th style="font-weight:normal" scope="row">Home Team</th>
-              <td><b>{{home_teams[i]}}</b></td>
-              <td><b>{{home_confidence[i]}}</b></td>
-            </tr>
-          </tbody>
-        </table>
+    <table class="table table-striped">
+      <thead>
+        <tr>
+          {% for i in range(id_len) %}
+          <th scope="col">{{user_ids[i]}}</th>
+          {% endfor %}
+        </tr>
+      </thead>
+      {% for teams in table_rows_new %}
+      <tbody>
+        {% for team in teams %}
+          <tr>
+            <th scope="row">{{team[0]}}</th>
+            <td>{{team[1]}}</td>
+            <td>{{team[2]}}</td>
+            <td>{{team[3]}}</td>
+            <td>{{team[4]}}</td>
+          </tr>
         {% endfor %}
-        <h5>Your tie-breaker score: {{tie_breaker}}</h5>
-      <br>
-      <br>
-    </div>
+      {% endfor %}
+          <tr>
+            {% for i in range(id_len)%}
+              <th scope="row">{{player_totals[i]}}</th>
+            {% endfor %}
+          </tr>
+          <tr>
+            {% for i in range(id_len)%}
+              <th scope="row">{{tie_breakers[i]}}</th>
+            {% endfor %}
+          </tr>
+      </tbody>
+    </table>
+<h4>This weeks winner(s) are: {{winning_player}}</h4>
 {% endblock %}
 
-</body>

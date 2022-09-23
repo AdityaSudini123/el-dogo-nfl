@@ -43,9 +43,34 @@
         </div>
       </div>
     </nav>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        {% if category == "error" %}
+        <div class="alert alert-danger alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% elif category == "success" %}
+        <div class="alert alert-success alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <div class="alert alert-primary" role="alert">
+          {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
 <br>
 <br>
 <br>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+    </div>
     <h2 align="center">Week 3 player archive</h2>
 <br>
     <div>

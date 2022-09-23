@@ -1,8 +1,74 @@
+<!DOCTYPE html>
+<html lang="en">
 {% extends 'base.html' %}
 
+<head>
+    {% block head %}
+    <meta name="viewport" content="screen" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <style>
+        table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-top: 1px solid black;
+    }
+
+    td,
+    th {
+      margin: 0;
+      border: 1px solid grey;
+      white-space: wrap;
+      border-top-width: 1px;
+    }
+    td.day {
+      background: red;
+    }
+      th.vertical {
+      writing-mode: horizontal-tb;
+      text-orientation: upright;
+    }
+
+    div.master_prelim {
+      width: 100%;
+      overflow-x: auto;
+      margin-left: 185px;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .headcol, .headcol-day {
+      position: absolute;
+      background: white;
+      width: 259px;
+      left: 0;
+      top: auto;
+      border-top-width: 1px;
+      /*only relevant for first row*/
+      margin-top: 0px;
+      /*compensate for top border*/
+    }
+
+    .headcol:before {
+      content:;
+    }
+
+    .short {
+      background: white;
+      letter-spacing: 0.2;
+    }
+
+    </style>
+    {% endblock %}
+</head>
 {% block content %}
-<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
-      <div class="container-fluid">
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+      <div id="nav" class="container-fluid">
         <button
           class="navbar-toggler"
           type="button"
@@ -42,38 +108,72 @@
         </div>
       </div>
     </nav>
-    <table class="table table-striped">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        {% if category == "error" %}
+        <div class="alert alert-danger alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% elif category == "success" %}
+        <div class="alert alert-success alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <div class="alert alert-primary" role="alert">
+          {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <br>
+    <br>
+    <br>
+    <h3 align="center">Weekly Mastersheet</h3>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+    </div>
+    <div class="master_prelim">
+      <table id="master_prelim" class="table table-bordered">
       <thead>
+      <tr>
+        {% for header in column_headers %}
+            <th class="vertical">{{header}}</th>
+        {% endfor %}
+      </tr>
+      </thead>
+      {% for i in range(column_1_len) %}
         <tr>
-          {% for i in range(id_len) %}
-          <th scope="col">{{user_ids[i]}}</th>
+          {% if i % 3 == 0 %}
+            <th align="left" class="headcol bg-dark text-white">{{column_1[i]}}</th>
+          {% else %}
+            <th align="center" class="headcol">{{column_1[i]}}</th>
+          {% endif %}
+      {% for k in range(row_len) %}
+              {% if i % 3 == 0 %}
+                <td align="center" class="short bg-dark text-black">{{table_rows_final[i][k]}}</td>
+              {% else %}
+                <td align="center" class="short bg-white text-black">{{table_rows_final[i][k]}}</td>
+              {% endif %}
           {% endfor %}
         </tr>
-      </thead>
-      {% for teams in table_rows_new %}
-      <tbody>
-        {% for team in teams %}
-          <tr>
-            <th scope="row">{{team[0]}}</th>
-            <td>{{team[1]}}</td>
-            <td>{{team[2]}}</td>
-            <td>{{team[3]}}</td>
-            <td>{{team[4]}}</td>
-          </tr>
-        {% endfor %}
       {% endfor %}
-          <tr>
-            {% for i in range(id_len)%}
-              <th scope="row">{{player_totals[i]}}</th>
-            {% endfor %}
-          </tr>
-          <tr>
-            {% for i in range(id_len)%}
-              <th scope="row">{{tie_breakers[i]}}</th>
-            {% endfor %}
-          </tr>
-      </tbody>
-    </table>
-<h4>This weeks winner(s) are: {{winning_player}}</h4>
+      <tfoot>
+        {% for footer in table_footer %}
+            <tr class="short bg-warning text-black">
+                {% for i in footer %}
+                    <td align="center" class="short bg-warning text-black">{{i}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+      </tfoot>
+      </table>
+    </div>
+    <br>
+    <br>
+</body>
 {% endblock %}
-
+</html>
