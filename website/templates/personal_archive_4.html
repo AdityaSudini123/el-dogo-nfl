@@ -1,6 +1,8 @@
-{% extends "base.html" %} {% block title %}Select Your Picks{% endblock %}
+{% extends "base.html" %}
+{% block title %}PERSONAL ARCHIVES{% endblock %}
+<body>
 {% block content %}
-    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -41,13 +43,8 @@
         </div>
       </div>
     </nav>
-    <br>
-    <br>
-    <br>
-    <div class="container bg-warning">
-      <p class="text-black">Currently logged in as {{current_user.username}}</p>
-    </div>
-    {% with messages = get_flashed_messages(with_categories=True) %}
+
+{% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
         {% for category, message in messages %}
         {% if category == "error" %}
@@ -68,46 +65,42 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-
-<h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
-<p align="center"><b>* Picks are due Tuesday at 7 PM PST *</b></p>
 <br>
-<div>
-  {% for i in range(0, len) %}
-    <table class="table" border="2">
-      <thead>
-        <tr >
-          <th scope="col">{{game_days[i]}}</th>
-          <th scope="col">Teams</th>
-          <th scope="col">Pick</th>
-        </tr>
-      </thead>
-      <tbody>
-        <tr>
-          <th style="font-weight:normal" scope="row">Away Team</th>
-          <td><b>{{away_teams[i]}}</b></td>
-          <td>
-            <input form="myForm" name="away_team_{{i}}" id="away_confidence" min="0" max="{{len}}" type="number" placeholder="">
-          </td>
-        </tr>
-        <tr>
-          <th style="font-weight:normal" scope="row">Home Team</th>
-          <td><b>{{home_teams[i]}}</b></td>
-          <td>
-            <input form="myForm" name="home_team_{{i}}" id="home_confidence" min="0" max="{{len}}" type="number" placeholder="">
-          </td>
-        </tr>
-      </tbody>
-    </table>
-    {% endfor %}
-    <form id="myForm" method="post">
-      <p>Enter tie-breaker here:</p>
-      <input form="myForm" name="tie_breaker" id="tie_breaker" min="0" max="99" type="number" placeholder="" required>
+<br>
+<br>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+    </div>
+    <h2 align="center">Week 4 player archive</h2>
+<br>
+    <div>
+      {% for i in range(0, len) %}
+        <table class="table" border="2">
+          <thead>
+            <tr >
+              <th scope="col">{{game_days[i]}}</th>
+              <th scope="col">Matchup</th>
+              <th scope="col">Your Pick</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th style="font-weight:normal" scope="row">Away Team</th>
+              <td><b>{{away_teams[i]}}</b></td>
+              <td><b>{{away_confidence[i]}}</b></td>
+            </tr>
+            <tr>
+              <th style="font-weight:normal" scope="row">Home Team</th>
+              <td><b>{{home_teams[i]}}</b></td>
+              <td><b>{{home_confidence[i]}}</b></td>
+            </tr>
+          </tbody>
+        </table>
+        {% endfor %}
+        <h5>Your tie-breaker score: {{tie_breaker}}</h5>
       <br>
       <br>
-      <input type="submit" value="submit">
-      <br>
-      <br>
-    </form>
-</div>
+    </div>
 {% endblock %}
+
+</body>
