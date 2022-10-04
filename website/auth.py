@@ -508,6 +508,48 @@ def personal_archive_4():
                            game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
                            tie_breaker=tie_breaker)
 
+@auth.route('/personal_archive_5')
+@login_required
+def personal_archive_5():
+    week_number = 5
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
 
 @auth.route("/mastersheet")
 @login_required
