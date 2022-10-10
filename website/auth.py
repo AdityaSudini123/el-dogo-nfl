@@ -145,6 +145,11 @@ def select_picks():
         away_teams.append(team[1])
         game_days.append(team[2])
 
+    total_possible = 0
+    print(len(home_teams))
+    for i in range(len(home_teams) + 1):
+        total_possible += i
+
     possible_score = int(float(len(home_teams) / 2) * float(1 + len(home_teams)))
     entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
     teams_dict = {}
@@ -213,7 +218,8 @@ def select_picks():
             flash(category='success', message='Congrats! Your picks for the week have been submitted')
             return redirect(url_for('views.home'))
     return render_template("select_picks.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
-                           len=len(home_teams), week_number=week_number, game_days=game_days, possible_score=possible_score)
+                           len=len(home_teams), week_number=week_number, game_days=game_days, possible_score=possible_score,
+                           total_possible=total_possible)
 
 # @auth.route("/mastersheet")
 # @login_required
