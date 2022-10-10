@@ -70,44 +70,47 @@ def login():
 
 @auth.route("/sign-up", methods=['GET', 'POST'])
 def sign_up():
-    if request.method == 'POST':
-        email = request.form.get("email")
-        username = request.form.get("username")
-        password1 = request.form.get("password1")
-        password2 = request.form.get("password2")
+    # if request.method == 'POST':
+    #     email = request.form.get("email")
+    #     username = request.form.get("username")
+    #     password1 = request.form.get("password1")
+    #     password2 = request.form.get("password2")
+    #
+    #     email_exists = User.query.filter_by(email=email).first()
+    #     username_exists = User.query.filter_by(username=username).first()
+    #     user_mongo = mongoDB['user_data'].find_one({'_id': username})
+    #
+    #     if email_exists:
+    #         if user_mongo:
+    #             if user_mongo['email'] == email:
+    #                 flash('Email is already in use.', category='error')
+    #     elif username_exists:
+    #         if user_mongo:
+    #             if user_mongo['_id'] == username:
+    #                 flash('Username is already in use.', category='error')
+    #     elif password1 != password2:
+    #         flash('Passwords don\'t match!', category='error')
+    #     elif len(username) < 2:
+    #         flash('Username is too short.', category='error')
+    #     elif len(password1) < 6:
+    #         flash('Password is too short.', category='error')
+    #     elif len(email) < 4:
+    #         return render_template("signup.html")
+    #     else:
+    #         new_user_mongodb = {"_id": username, "email": email, "password": generate_password_hash(password1, method="sha256")}
+    #         user_data_collection.insert_one(new_user_mongodb)
+    #
+    #         new_user = User(email=email, username=username, password=generate_password_hash(
+    #             password1, method='sha256'))
+    #         db.session.add(new_user)
+    #         db.session.commit()
+    #         login_user(new_user, remember=True)
+    #         flash('User created!')
+    #         return redirect(url_for('views.home'))
+    # return render_template("signup.html")
+    flash(category='error', message='Sign ups are closed. Please login if you have an account, or try to sign up next season.')
+    return redirect(url_for('auth.login'))
 
-        email_exists = User.query.filter_by(email=email).first()
-        username_exists = User.query.filter_by(username=username).first()
-        user_mongo = mongoDB['user_data'].find_one({'_id': username})
-
-        if email_exists:
-            if user_mongo:
-                if user_mongo['email'] == email:
-                    flash('Email is already in use.', category='error')
-        elif username_exists:
-            if user_mongo:
-                if user_mongo['_id'] == username:
-                    flash('Username is already in use.', category='error')
-        elif password1 != password2:
-            flash('Passwords don\'t match!', category='error')
-        elif len(username) < 2:
-            flash('Username is too short.', category='error')
-        elif len(password1) < 6:
-            flash('Password is too short.', category='error')
-        elif len(email) < 4:
-            return render_template("signup.html")
-        else:
-            new_user_mongodb = {"_id": username, "email": email, "password": generate_password_hash(password1, method="sha256")}
-            user_data_collection.insert_one(new_user_mongodb)
-
-            new_user = User(email=email, username=username, password=generate_password_hash(
-                password1, method='sha256'))
-            db.session.add(new_user)
-            db.session.commit()
-            login_user(new_user, remember=True)
-            flash('User created!')
-            return redirect(url_for('views.home'))
-    return render_template("signup.html")
 
 @auth.route("/logout")
 @login_required
@@ -146,7 +149,6 @@ def select_picks():
         game_days.append(team[2])
 
     total_possible = 0
-    print(len(home_teams))
     for i in range(len(home_teams) + 1):
         total_possible += i
 
@@ -279,10 +281,9 @@ def master_archive_1():
         result = final_exists['result']
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
-
         elif result[0] == 'winner':
             message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
-        return render_template('mastersheet.html', column_1=column_1, column_1_len=len(column_1),
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
                                table_footer=table_footer, message=message, footer_len=len(table_footer))
@@ -293,18 +294,33 @@ def master_archive_1():
 @auth.route('/master_archive_2', methods=['GET', 'POST'])
 @login_required
 def master_archive_2():
-    master_exists = mongoDB['week_2'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        table_rows_new = master_exists['table_rows_new']
-        table_len = master_exists['table_len']
-        submitted_ids_sorted = master_exists['submitted_ids_sorted']
-        id_len = master_exists['id_len']
-        player_totals = master_exists['player_totals']
-        tie_breakers = master_exists['tie_breakers']
+    final_exists = mongoDB['week_2'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
 
-        return render_template('master_archive_2.html', table_rows_new=table_rows_new, table_len=table_len,
-                               user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                               tie_breakers=tie_breakers)
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 2')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
     else:
         flash(category='error', message='Mastersheet is not available yet.')
         return redirect(url_for('views.home'))
@@ -312,18 +328,33 @@ def master_archive_2():
 @auth.route('/master_archive_3', methods=['GET', 'POST'])
 @login_required
 def master_archive_3():
-    master_exists = mongoDB['week_3'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        table_rows_new = master_exists['table_rows_new']
-        table_len = master_exists['table_len']
-        submitted_ids_sorted = master_exists['submitted_ids_sorted']
-        id_len = master_exists['id_len']
-        player_totals = master_exists['player_totals']
-        tie_breakers = master_exists['tie_breakers']
+    final_exists = mongoDB['week_3'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
 
-        return render_template('master_archive_3.html', table_rows_new=table_rows_new, table_len=table_len,
-                               user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                               tie_breakers=tie_breakers)
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 3')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
     else:
         flash(category='error', message='Mastersheet is not available yet.')
         return redirect(url_for('views.home'))
@@ -331,21 +362,478 @@ def master_archive_3():
 @auth.route('/master_archive_4', methods=['GET', 'POST'])
 @login_required
 def master_archive_4():
-    master_exists = mongoDB['week_4'].find_one({'_id': 'mastersheet'})
-    if master_exists:
-        table_rows_new = master_exists['table_rows_new']
-        table_len = master_exists['table_len']
-        submitted_ids_sorted = master_exists['submitted_ids_sorted']
-        id_len = master_exists['id_len']
-        player_totals = master_exists['player_totals']
-        tie_breakers = master_exists['tie_breakers']
-        return render_template('master_archive_4.html', table_rows_new=table_rows_new, table_len=table_len,
-                               user_ids=submitted_ids_sorted, id_len=id_len, player_totals=player_totals,
-                               tie_breakers=tie_breakers)
+    final_exists = mongoDB['week_4'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 4')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
     else:
         flash(category='error', message='Mastersheet is not available yet.')
         return redirect(url_for('views.home'))
 
+@auth.route('/master_archive_5', methods=['GET', 'POST'])
+@login_required
+def master_archive_5():
+    final_exists = mongoDB['week_5'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 5')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_6', methods=['GET', 'POST'])
+@login_required
+def master_archive_6():
+    final_exists = mongoDB['week_6'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 6')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_7', methods=['GET', 'POST'])
+@login_required
+def master_archive_7():
+    final_exists = mongoDB['week_7'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 7')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_8', methods=['GET', 'POST'])
+@login_required
+def master_archive_8():
+    final_exists = mongoDB['week_8'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 8')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_9', methods=['GET', 'POST'])
+@login_required
+def master_archive_9():
+    final_exists = mongoDB['week_9'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 9')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_10', methods=['GET', 'POST'])
+@login_required
+def master_archive_10():
+    final_exists = mongoDB['week_10'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 10')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_11', methods=['GET', 'POST'])
+@login_required
+def master_archive_11():
+    final_exists = mongoDB['week_11'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 11')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_12', methods=['GET', 'POST'])
+@login_required
+def master_archive_12():
+    final_exists = mongoDB['week_12'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 12')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_13', methods=['GET', 'POST'])
+@login_required
+def master_archive_13():
+    final_exists = mongoDB['week_13'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 13')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_14', methods=['GET', 'POST'])
+@login_required
+def master_archive_14():
+    final_exists = mongoDB['week_14'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 14')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_15', methods=['GET', 'POST'])
+@login_required
+def master_archive_15():
+    final_exists = mongoDB['week_15'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 15')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_16', methods=['GET', 'POST'])
+@login_required
+def master_archive_16():
+    final_exists = mongoDB['week_16'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 16')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
+
+@auth.route('/master_archive_17', methods=['GET', 'POST'])
+@login_required
+def master_archive_17():
+    final_exists = mongoDB['week_17'].find_one('final_master')
+    if final_exists:
+        table_rows = final_exists['table_rows']
+        column_1 = []
+        table_rows_final = []
+        for row in table_rows:
+            column_1.append(row[0])
+            table_rows_final.append(row[1:])
+
+        column_headers = table_rows_final[0]
+        table_footer = [table_rows_final[-2], table_rows_final[-1]]
+        table_footer[0].insert(0, 'TOTAL')
+        table_footer[1].insert(0, 'Tie-Breaker')
+        table_rows_final = table_rows_final[1:-2]
+        column_1 = column_1[1:-2]
+        column_headers.insert(0, 'Week 17')
+        tie_breaker_index = str(len(column_1) - 1)
+
+        result = final_exists['result']
+        if result[0] == 'tie':
+            message = f"Tie between {result[1][0]} and {result[1][1]}"
+        elif result[0] == 'winner':
+            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+                               row_len=len(table_rows[0]), table_rows_final=table_rows_final,
+                               column_headers=column_headers, tie_breaker_index=tie_breaker_index,
+                               table_footer=table_footer, message=message, footer_len=len(table_footer))
+    else:
+        flash(category='error', message='Mastersheet is not available yet.')
+        return redirect(url_for('views.home'))
 
 @auth.route('/personal_archive_1')
 @login_required
@@ -432,95 +920,141 @@ def personal_archive_2():
 @auth.route('/personal_archive_3')
 @login_required
 def personal_archive_3():
-    week_number = 3
-    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
-    if not weekly_schedule:
-        flash(category='error', message='Archive is not available yet')
-        return redirect(url_for('views.home'))
-    weekly_schedule.pop("_id")
-    weekly_schedule.pop("week_number")
-    home_teams = []
-    away_teams = []
-    game_days = []
-    teams = []
-    for item in weekly_schedule.items():
-        teams.append(item[1])
-    for team in teams:
-        home_teams.append(team[0])
-        away_teams.append(team[1])
-        game_days.append(team[2])
-    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
-    if player_picks:
-        winners = player_picks['winners']
-        confidence = player_picks['confidence']
-        tie_breaker = player_picks['tie_breaker']
-        home_confidence = []
-        away_confidence = []
-        for i in range(len(home_teams)):
-            if home_teams[i] in winners:
-                home_confidence.append(confidence[i])
-                away_confidence.append('0')
-            elif away_teams[i] in winners:
-                away_confidence.append(confidence[i])
-                home_confidence.append('0')
-    else:
-        flash(category='error', message='You have not made any picks yet')
-
-        return redirect(url_for('auth.select_picks'))
-
-    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
-                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
-                           tie_breaker=tie_breaker)
+    # week_number = 3
+    # weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    # if not weekly_schedule:
+    #     flash(category='error', message='Archive is not available yet')
+    #     return redirect(url_for('views.home'))
+    # weekly_schedule.pop("_id")
+    # weekly_schedule.pop("week_number")
+    # home_teams = []
+    # away_teams = []
+    # game_days = []
+    # teams = []
+    # for item in weekly_schedule.items():
+    #     teams.append(item[1])
+    # for team in teams:
+    #     home_teams.append(team[0])
+    #     away_teams.append(team[1])
+    #     game_days.append(team[2])
+    # player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    # if player_picks:
+    #     winners = player_picks['winners']
+    #     confidence = player_picks['confidence']
+    #     tie_breaker = player_picks['tie_breaker']
+    #     home_confidence = []
+    #     away_confidence = []
+    #     for i in range(len(home_teams)):
+    #         if home_teams[i] in winners:
+    #             home_confidence.append(confidence[i])
+    #             away_confidence.append('0')
+    #         elif away_teams[i] in winners:
+    #             away_confidence.append(confidence[i])
+    #             home_confidence.append('0')
+    # else:
+    #     flash(category='error', message='You have not made any picks yet')
+    #
+    #     return redirect(url_for('auth.select_picks'))
+    flash(category='error', message='Personal archive for this week is not available')
+    return redirect(url_for('views.home'))
+    # return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+    #                        game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+    #                        tie_breaker=tie_breaker)
 
 @auth.route('/personal_archive_4')
 @login_required
 def personal_archive_4():
-    week_number = 4
-    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
-    if not weekly_schedule:
-
-        flash(category='error', message='Archive is not available yet')
-        return redirect(url_for('views.home'))
-    weekly_schedule.pop("_id")
-    weekly_schedule.pop("week_number")
-    home_teams = []
-    away_teams = []
-    game_days = []
-    teams = []
-    for item in weekly_schedule.items():
-        teams.append(item[1])
-    for team in teams:
-        home_teams.append(team[0])
-        away_teams.append(team[1])
-        game_days.append(team[2])
-    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
-    if player_picks:
-        winners = player_picks['winners']
-        confidence = player_picks['confidence']
-        tie_breaker = player_picks['tie_breaker']
-        home_confidence = []
-        away_confidence = []
-        for i in range(len(home_teams)):
-            if home_teams[i] in winners:
-                home_confidence.append(confidence[i])
-                away_confidence.append('0')
-            elif away_teams[i] in winners:
-                away_confidence.append(confidence[i])
-                home_confidence.append('0')
-    else:
-        flash(category='error', message='You have not made any picks yet')
-        return redirect(url_for('auth.select_picks'))
-    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
-                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
-                           tie_breaker=tie_breaker)
+    # week_number = 4
+    # weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    # if not weekly_schedule:
+    #
+    #     flash(category='error', message='Archive is not available yet')
+    #     return redirect(url_for('views.home'))
+    # weekly_schedule.pop("_id")
+    # weekly_schedule.pop("week_number")
+    # home_teams = []
+    # away_teams = []
+    # game_days = []
+    # teams = []
+    # for item in weekly_schedule.items():
+    #     teams.append(item[1])
+    # for team in teams:
+    #     home_teams.append(team[0])
+    #     away_teams.append(team[1])
+    #     game_days.append(team[2])
+    # player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    # if player_picks:
+    #     winners = player_picks['winners']
+    #     confidence = player_picks['confidence']
+    #     tie_breaker = player_picks['tie_breaker']
+    #     home_confidence = []
+    #     away_confidence = []
+    #     for i in range(len(home_teams)):
+    #         if home_teams[i] in winners:
+    #             home_confidence.append(confidence[i])
+    #             away_confidence.append('0')
+    #         elif away_teams[i] in winners:
+    #             away_confidence.append(confidence[i])
+    #             home_confidence.append('0')
+    # else:
+    #     flash(category='error', message='You have not made any picks yet')
+    #     return redirect(url_for('auth.select_picks'))
+    flash(category='error', message='Personal archive for this week is not available')
+    return redirect(url_for('views.home'))
+    # return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+    #                        game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+    #                        tie_breaker=tie_breaker)
 
 @auth.route('/personal_archive_5')
 @login_required
 def personal_archive_5():
-    week_number = 5
+    # week_number = 5
+    # weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    # if not weekly_schedule:
+    #
+    #     flash(category='error', message='Archive is not available yet')
+    #     return redirect(url_for('views.home'))
+    # weekly_schedule.pop("_id")
+    # weekly_schedule.pop("week_number")
+    # home_teams = []
+    # away_teams = []
+    # game_days = []
+    # teams = []
+    # for item in weekly_schedule.items():
+    #     teams.append(item[1])
+    # for team in teams:
+    #     home_teams.append(team[0])
+    #     away_teams.append(team[1])
+    #     game_days.append(team[2])
+    # player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    # if player_picks:
+    #     winners = player_picks['winners']
+    #     confidence = player_picks['confidence']
+    #     tie_breaker = player_picks['tie_breaker']
+    #     home_confidence = []
+    #     away_confidence = []
+    #     for i in range(len(home_teams)):
+    #         if home_teams[i] in winners:
+    #             home_confidence.append(confidence[i])
+    #             away_confidence.append('0')
+    #         elif away_teams[i] in winners:
+    #             away_confidence.append(confidence[i])
+    #             home_confidence.append('0')
+    # else:
+    #     flash(category='error', message='You have not made any picks yet')
+    #     return redirect(url_for('auth.select_picks'))
+    flash(category='error', message='Personal archive for this week is not available')
+    return redirect(url_for('views.home'))
+    # return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+    #                        game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+    #                        tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_6')
+@login_required
+def personal_archive_6():
+    week_number = 6
     weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
     if not weekly_schedule:
-
         flash(category='error', message='Archive is not available yet')
         return redirect(url_for('views.home'))
     weekly_schedule.pop("_id")
@@ -556,6 +1090,456 @@ def personal_archive_5():
                            game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
                            tie_breaker=tie_breaker)
 
+@auth.route('/personal_archive_7')
+@login_required
+def personal_archive_7():
+    week_number = 7
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_8')
+@login_required
+def personal_archive_8():
+    week_number = 8
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_9')
+@login_required
+def personal_archive_9():
+    week_number = 9
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_10')
+@login_required
+def personal_archive_10():
+    week_number = 10
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_11')
+@login_required
+def personal_archive_11():
+    week_number = 11
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_12')
+@login_required
+def personal_archive_12():
+    week_number = 12
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_13')
+@login_required
+def personal_archive_13():
+    week_number = 13
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_14')
+@login_required
+def personal_archive_14():
+    week_number = 14
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_15')
+@login_required
+def personal_archive_15():
+    week_number = 15
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_16')
+@login_required
+def personal_archive_16():
+    week_number = 16
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
+
+@auth.route('/personal_archive_17')
+@login_required
+def personal_archive_17():
+    week_number = 17
+    weekly_schedule = mongoDB[f'week_{week_number}'].find_one({'_id': 'schedule'})
+    if not weekly_schedule:
+        flash(category='error', message='Archive is not available yet')
+        return redirect(url_for('views.home'))
+    weekly_schedule.pop("_id")
+    weekly_schedule.pop("week_number")
+    home_teams = []
+    away_teams = []
+    game_days = []
+    teams = []
+    for item in weekly_schedule.items():
+        teams.append(item[1])
+    for team in teams:
+        home_teams.append(team[0])
+        away_teams.append(team[1])
+        game_days.append(team[2])
+    player_picks = mongoDB[f'week_{week_number}'].find_one({'_id': current_user.username})
+    if player_picks:
+        winners = player_picks['winners']
+        confidence = player_picks['confidence']
+        tie_breaker = player_picks['tie_breaker']
+        home_confidence = []
+        away_confidence = []
+        for i in range(len(home_teams)):
+            if home_teams[i] in winners:
+                home_confidence.append(confidence[i])
+                away_confidence.append('0')
+            elif away_teams[i] in winners:
+                away_confidence.append(confidence[i])
+                home_confidence.append('0')
+    else:
+        flash(category='error', message='You have not made any picks yet')
+        return redirect(url_for('auth.select_picks'))
+    return render_template(f'personal_archive_{week_number}.html', len=len(home_teams), home_teams=home_teams, away_teams=away_teams,
+                           game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
+                           tie_breaker=tie_breaker)
 
 @auth.route("/mastersheet")
 @login_required

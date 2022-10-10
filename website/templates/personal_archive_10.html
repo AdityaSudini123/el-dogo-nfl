@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block title %}PERSONAL ARCHIVES{% endblock %}
+<body>
+{% block content %}
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+      <div class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
+            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/rules">Rules</a>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Personal Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                Mastersheet Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <a class="nav-item nav-link" href="/contact">Contact</a>
+            <a class="nav-item nav-link" href="/logout">logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+
+{% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        {% if category == "error" %}
+        <div class="alert alert-danger alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% elif category == "success" %}
+        <div class="alert alert-success alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <div class="alert alert-primary" role="alert">
+          {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+<br>
+<br>
+<br>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+    </div>
+    <h2 align="center">Week 10 player archive</h2>
+<br>
+    <div>
+      {% for i in range(0, len) %}
+        <table class="table" border="2">
+          <thead>
+            <tr >
+              <th scope="col">{{game_days[i]}}</th>
+              <th scope="col">Matchup</th>
+              <th scope="col">Your Pick</th>
+            </tr>
+          </thead>
+          <tbody>
+            <tr>
+              <th style="font-weight:normal" scope="row">Away Team</th>
+              <td><b>{{away_teams[i]}}</b></td>
+              <td><b>{{away_confidence[i]}}</b></td>
+            </tr>
+            <tr>
+              <th style="font-weight:normal" scope="row">Home Team</th>
+              <td><b>{{home_teams[i]}}</b></td>
+              <td><b>{{home_confidence[i]}}</b></td>
+            </tr>
+          </tbody>
+        </table>
+        {% endfor %}
+        <h5>Your tie-breaker score: {{tie_breaker}}</h5>
+      <br>
+      <br>
+    </div>
+{% endblock %}
+
+</body>
