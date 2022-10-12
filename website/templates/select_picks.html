@@ -91,7 +91,7 @@
           <td><b>{{away_teams[i]}}</b></td>
           <td>
             <input form="myForm" name="away_team_{{i}}" id="away_confidence_{{i}}" min="0" max="{{len}}" type="number"
-                   placeholder="" value="0" onkeyup="sum();">
+                   placeholder="" value="" onkeyup="sum();">
           </td>
         </tr>
         <tr>
@@ -99,7 +99,7 @@
           <td><b>{{home_teams[i]}}</b></td>
           <td>
             <input form="myForm" name="home_team_{{i}}" id="home_confidence_{{i}}" min="0" max="{{len}}" type="number"
-                   placeholder="" value="0" onkeyup="sum();">
+                   placeholder="" value="" onkeyup="sum();">
           </td>
         </tr>
       </tbody>
@@ -111,44 +111,76 @@
   <SCRIPT>
   function sum() {
               var ac1 = document.getElementById('away_confidence_0').value;
+              if (ac1 == '') {ac1 = 0;}
               var hc1 = document.getElementById('home_confidence_0').value;
+              if (hc1 == '') {hc1 = 0;}
               var ac2 = document.getElementById('away_confidence_1').value;
+              if (ac2 == '') {ac2 = 0;}
               var hc2 = document.getElementById('home_confidence_1').value;
+              if (hc2 == '') {hc2 = 0;}
               var ac3 = document.getElementById('away_confidence_2').value;
+              if (ac3 == '') {ac3 = 0;}
               var hc3 = document.getElementById('home_confidence_2').value;
+              if (hc3 == '') {hc3 = 0;}
               var ac4 = document.getElementById('away_confidence_3').value;
+              if (ac4 == '') {ac4 = 0;}
               var hc4 = document.getElementById('home_confidence_3').value;
+              if (hc4 == '') {hc4 = 0;}
               var ac5 = document.getElementById('away_confidence_4').value;
+              if (ac5 == '') {ac5 = 0;}
               var hc5 = document.getElementById('home_confidence_4').value;
+              if (hc5 == '') {hc5 = 0;}
               var ac6 = document.getElementById('away_confidence_5').value;
+              if (ac6 == '') {ac6 = 0;}
               var hc6 = document.getElementById('home_confidence_5').value;
+              if (hc6 == '') {hc6 = 0;}
               var ac7 = document.getElementById('away_confidence_6').value;
+              if (ac7 == '') {ac7 = 0;}
               var hc7 = document.getElementById('home_confidence_6').value;
+              if (hc7 == '') {hc7 = 0;}
               var ac8 = document.getElementById('away_confidence_7').value;
+              if (ac8 == '') {ac8 = 0;}
               var hc8 = document.getElementById('home_confidence_7').value;
+              if (hc8 == '') {hc8 = 0;}
               var ac9 = document.getElementById('away_confidence_8').value;
+              if (ac9 == '') {ac9 = 0;}
               var hc9 = document.getElementById('home_confidence_8').value;
+              if (hc9 == '') {hc9 = 0;}
               var ac10 = document.getElementById('away_confidence_9').value;
+              if (ac10 == '') {ac10 = 0;}
               var hc10 = document.getElementById('home_confidence_9').value;
+              if (hc10 == '') {hc10 = 0;}
               var ac11 = document.getElementById('away_confidence_10').value;
+              if (ac11 == '') {ac11 = 0;}
               var hc11 = document.getElementById('home_confidence_10').value;
+              if (hc11 == '') {hc11 = 0;}
               var ac12 = document.getElementById('away_confidence_11').value;
+              if (ac12 == '') {ac12 = 0;}
               var hc12 = document.getElementById('home_confidence_11').value;
+              if (hc12 == '') {hc12 = 0;}
               if (document.getElementById('away_confidence_12')){
                 var ac13 = document.getElementById('away_confidence_12').value;
+                if (ac13 == '') {ac13 = 0;}
                 var hc13 = document.getElementById('home_confidence_12').value;
+                if (hc13 == '') {hc13 = 0;}
               }
               if (document.getElementById('away_confidence_13')){
                 var ac14 = document.getElementById('away_confidence_13').value;
+                if (ac14 == '') {ac14 = 0;}
                 var hc14 = document.getElementById('home_confidence_13').value;
+                if (hc14 == '') {hc14 = 0;}
               }
               if (document.getElementById('away_confidence_14')){
                 var ac15 = document.getElementById('away_confidence_14').value;
+                if (ac15 == '') {ac15 = 0;}
                 var hc15 = document.getElementById('home_confidence_14').value;
+                if (hc15 == '') {hc15 = 0;}
               }
               if (document.getElementById('away_confidence_15')){
                 var ac16 = document.getElementById('away_confidence_15').value;
+                if (ac16 == '') {ac16 = 0;}
                 var hc16 = document.getElementById('home_confidence_15').value;
+                if (hc16 == '') {hc16 = 0;}
               }
 
               var result = parseInt(ac1) + parseInt(hc1) + parseInt(ac2) + parseInt(hc2) +
