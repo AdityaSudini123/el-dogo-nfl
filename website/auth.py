@@ -161,46 +161,35 @@ def select_picks():
         else:
             player_entry = {}
             for i in range(len(home_teams)):
-                all_confidence = []
                 home_confidence = []
                 away_confidence = []
                 total_score = 0
                 for i in range(len(home_teams)):
                     confidence_home = request.form.get(f'home_team_{i}')
-                    if confidence_home == '':
-                        home_confidence.append('0')
-                    else:
-                        home_confidence.append(confidence_home)
-                        all_confidence.append(confidence_home)
-                        total_score += int(confidence_home)
+                    home_confidence.append(confidence_home)
+                    total_score += int(confidence_home)
                     # away_teams[i] refers to the confidence number
                     confidence_away = request.form.get(f'away_team_{i}')
-                    if confidence_away == '':
-                        away_confidence.append('0')
-                    else:
-                        away_confidence.append(confidence_away)
-                        all_confidence.append(confidence_away)
-                        total_score += int(confidence_away)
-
-                if len(all_confidence) != len(set(all_confidence)):
-                    flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
-                                          'picks are entered correctly.')
-                    return redirect(url_for('auth.select_picks'))
+                    away_confidence.append(confidence_away)
+                    total_score += int(confidence_away)
 
                 for i in range(len(home_confidence)):
                     if home_confidence[i] == '0':
                         if away_confidence[i] == '0':
+                            print('2')
                             flash(category='error',
                                   message='Your picks have not been submitted. Please review the rules and ensure your '
                                           'picks are entered correctly.')
                             return redirect(url_for('auth.select_picks'))
                     elif home_confidence[i] != '0':
                         if away_confidence[i] != '0':
+                            print('3')
                             flash(category='error',
                                   message='Your picks have not been submitted. Please review the rules and ensure your '
                                           'picks are entered correctly.')
                             return redirect(url_for('auth.select_picks'))
                 if total_score > possible_score:
+                    print('4')
                     flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
                                           'picks are entered correctly.')
                     return redirect(url_for('auth.select_picks'))
