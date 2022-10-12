@@ -134,26 +134,34 @@
               var hc11 = document.getElementById('home_confidence_10').value;
               var ac12 = document.getElementById('away_confidence_11').value;
               var hc12 = document.getElementById('home_confidence_11').value;
-              var ac13 = document.getElementById('away_confidence_12').value;
-              var hc13 = document.getElementById('home_confidence_12').value;
-              var ac14 = document.getElementById('away_confidence_13').value;
-              var hc14 = document.getElementById('home_confidence_13').value;
-              if (document.getElementById('away_confidence_14')) {
+              if (document.getElementById('away_confidence_12')){
+                var ac13 = document.getElementById('away_confidence_12').value;
+                var hc13 = document.getElementById('home_confidence_12').value;
+              }
+              if (document.getElementById('away_confidence_13')){
+                var ac14 = document.getElementById('away_confidence_13').value;
+                var hc14 = document.getElementById('home_confidence_13').value;
+              }
+              if (document.getElementById('away_confidence_14')){
                 var ac15 = document.getElementById('away_confidence_14').value;
                 var hc15 = document.getElementById('home_confidence_14').value;
+              }
+              if (document.getElementById('away_confidence_15')){
                 var ac16 = document.getElementById('away_confidence_15').value;
                 var hc16 = document.getElementById('home_confidence_15').value;
               }
+
               var result = parseInt(ac1) + parseInt(hc1) + parseInt(ac2) + parseInt(hc2) +
                            parseInt(ac3) + parseInt(hc3) + parseInt(ac4) + parseInt(hc4) +
                            parseInt(ac5) + parseInt(hc5) + parseInt(ac6) + parseInt(hc6) +
                            parseInt(ac7) + parseInt(hc7) + parseInt(ac8) + parseInt(hc8) +
                            parseInt(ac9) + parseInt(hc9) + parseInt(ac10) + parseInt(hc10) +
-                           parseInt(ac11) + parseInt(hc11) + parseInt(ac12) + parseInt(hc12) +
-                           parseInt(ac13) + parseInt(hc13) + parseInt(ac14) + parseInt(hc14);
-              if (document.getElementById('away_confidence_14')) {
-                result = result + parseInt(ac15) + parseInt(hc15) + parseInt(ac16) + parseInt(hc16)
-              }
+                           parseInt(ac11) + parseInt(hc11) + parseInt(ac12) + parseInt(hc12);
+              if (document.getElementById('away_confidence_12')) {result = result + parseInt(ac13) + parseInt(hc13)}
+              if (document.getElementById('away_confidence_13')) {result = result + parseInt(ac14) + parseInt(hc14)}
+              if (document.getElementById('away_confidence_14')) {result = result + parseInt(ac15) + parseInt(hc15)}
+              if (document.getElementById('away_confidence_15')) {result = result + parseInt(ac16) + parseInt(hc16)}
+
               if (!isNaN(result)) {
                   document.getElementById('txt3').value = result;
               }
@@ -172,6 +180,7 @@
       <input form="myForm" name="tie_breaker" id="tie_breaker" min="0" max="99" type="number" placeholder="" required>
       <br>
       <br>
+
       <input id="cmdSubmit" type="submit" value="submit">
       <br>
       <br>
