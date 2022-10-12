@@ -166,12 +166,20 @@ def select_picks():
                 total_score = 0
                 for i in range(len(home_teams)):
                     confidence_home = request.form.get(f'home_team_{i}')
-                    home_confidence.append(confidence_home)
-                    total_score += int(confidence_home)
+                    if confidence_home == '':
+                        confidence_home = '0'
+                        home_confidence.append(confidence_home)
+                        total_score += int(confidence_home)
+                    else:
+                        home_confidence.append(confidence_home)
                     # away_teams[i] refers to the confidence number
                     confidence_away = request.form.get(f'away_team_{i}')
-                    away_confidence.append(confidence_away)
-                    total_score += int(confidence_away)
+                    if confidence_away == '':
+                        confidence_away = '0'
+                        away_confidence.append(confidence_away)
+                        total_score += int(confidence_away)
+                    else:
+                        away_confidence.append(confidence_away)
 
                 for i in range(len(home_confidence)):
                     if home_confidence[i] == '0':
