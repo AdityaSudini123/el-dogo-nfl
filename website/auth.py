@@ -1,6 +1,5 @@
 import csv
 import datetime
-
 import numpy
 from pymongo import MongoClient
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
