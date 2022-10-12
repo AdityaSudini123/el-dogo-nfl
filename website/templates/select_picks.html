@@ -107,7 +107,7 @@
 
     {% endfor %}
   <p><b>Your total:</b></p>
-<input type="text" id="txt3" /><br />
+  <input type="text" id="txt3" /><br />
   <SCRIPT>
   function sum() {
               var ac1 = document.getElementById('away_confidence_0').value;
@@ -196,6 +196,22 @@
 
               if (!isNaN(result)) {
                   document.getElementById('txt3').value = result;
+              if (ac1 == hc1) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac2 == hc2) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac3 == hc3) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac4 == hc4) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac5 == hc5) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac6 == hc6) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac7 == hc7) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac8 == hc8) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac9 == hc9) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac10 == hc10) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac11 == hc11) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac12 == hc12) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac13 == hc13) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac14 == hc14) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac15 == hc15) {document.getElementById("cmdSubmit").disabled = true;}
+              if (ac16 == hc16) {document.getElementById("cmdSubmit").disabled = true;}
               }
               if (result == {{total_possible}}) {
                 document.getElementById("cmdSubmit").disabled = false;
