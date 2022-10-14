@@ -1542,7 +1542,8 @@ def personal_archive_17():
 def mastersheet():
     prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master'})
     final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
-
+    current_week = mongoDB['current_week'].find_one({'_id': 'schedule'})
+    current_week_number = current_week['week_number']
     if prelim_exists:
         table_rows = prelim_exists['table_rows']
         column_1 = []
@@ -1556,7 +1557,7 @@ def mastersheet():
         table_footer[0].insert(0, 'Tie-Breaker')
         table_rows_final = table_rows_final[1:-1]
         column_1 = column_1[1:-1]
-        column_headers.insert(0, 'Week 1')
+        column_headers.insert(0, f'Week {current_week_number}')
         tie_breaker_index = str(len(column_1) - 1)
         return render_template('mastersheet.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
