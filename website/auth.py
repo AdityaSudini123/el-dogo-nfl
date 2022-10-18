@@ -427,6 +427,9 @@ def master_archive_5():
 @login_required
 def master_archive_6():
     final_exists = mongoDB['week_6'].find_one('final_master')
+    week_6_schedule = mongoDB['week_6'].find_one({'_id': 'schedule'})
+    number_of_games = len(week_6_schedule) - 2
+    total_possible = sum(range(number_of_games + 1))
     if final_exists:
         table_rows = final_exists['table_rows']
         column_1 = []
@@ -443,12 +446,12 @@ def master_archive_6():
         column_1 = column_1[1:-2]
         column_headers.insert(0, 'Week 6')
         tie_breaker_index = str(len(column_1) - 1)
-
         result = final_exists['result']
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            deduction = total_possible - result[1][1]
+            message = f'Winner was {result[1][0]} with {result[1][1]} points (-{deduction})'
         return render_template('master_archive_6.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -1543,6 +1546,8 @@ def mastersheet():
     prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master'})
     final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
     current_week = mongoDB['current_week'].find_one({'_id': 'schedule'})
+    number_of_games = len(current_week) - 2
+    total_possible = sum(range(number_of_games + 1))
     if prelim_exists:
         table_rows = prelim_exists['table_rows']
         column_1 = []
@@ -1586,7 +1591,9 @@ def mastersheet():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            deduction = total_possible - result[1][1]
+            message = f"Congratulations to this weeks winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
+
         return render_template('mastersheet.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
