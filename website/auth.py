@@ -1578,7 +1578,8 @@ def mastersheet():
         table_footer[1].insert(0, 'Tie-Breaker')
         table_rows_final = table_rows_final[1:-2]
         column_1 = column_1[1:-2]
-        column_headers.insert(0, 'Week 1')
+        week_number = final_exists['table_rows'][0][0]
+        column_headers.insert(0, week_number)
         tie_breaker_index = str(len(column_1) - 1)
 
         result = final_exists['result']
