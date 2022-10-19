@@ -791,7 +791,7 @@ def master_archive_16():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'This week\'s winner is {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -1592,7 +1592,7 @@ def mastersheet():
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
             deduction = total_possible - result[1][1]
-            message = f"Congratulations to this weeks winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
+            message = f"Congratulations to this week\'s winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
 
         return render_template('mastersheet.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
