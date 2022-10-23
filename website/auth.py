@@ -49,7 +49,7 @@ def login():
                         password, method='sha256'))
                     db.session.add(new_user)
                     db.session.commit()
-                    login_user(new_user, remember=True)
+                    login_user(new_user, remember=False)
                     flash(f'Current logged in as {username}', category='success')
                     return redirect(url_for('views.home'))
                 else:
