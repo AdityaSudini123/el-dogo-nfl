@@ -1,5 +1,7 @@
 import csv
 import datetime
+
+import flask_login
 import numpy
 from pymongo import MongoClient
 from flask import Blueprint, render_template, redirect, url_for, request, flash, session
@@ -49,7 +51,7 @@ def login():
                         password, method='sha256'))
                     db.session.add(new_user)
                     db.session.commit()
-                    login_user(new_user, remember=False)
+                    login_user(new_user, remember=True)
                     flash(f'Current logged in as {username}', category='success')
                     return redirect(url_for('views.home'))
                 else:
@@ -123,7 +125,7 @@ def rules():
     return render_template('rules.html')
 
 @auth.route("/select_picks", methods=['GET', 'POST'])
-@login_required
+@flask_login.fresh_login_required
 def select_picks():
     # flash(category='error', message='Picks are now closed')
     # return redirect(url_for('views.home'))
@@ -1543,11 +1545,16 @@ def personal_archive_17():
 @auth.route("/mastersheet")
 @login_required
 def mastersheet():
+    week_number_for_final_master = mongoDB['current_week'].find_one({'_id': 'schedule'})['week_number']
+    week_number_for_final_master = week_number_for_final_master - 1
+    final_master_week = mongoDB[f'week_{week_number_for_final_master}'].find_one({'_id': 'schedule'})
+    number_of_game_for_final_mastersheet = len(final_master_week) - 2
+
     prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master'})
     final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
     current_week = mongoDB['current_week'].find_one({'_id': 'schedule'})
     number_of_games = len(current_week) - 2
-    total_possible = sum(range(number_of_games + 1))
+    total_possible = sum(range(number_of_game_for_final_mastersheet + 1))
     if prelim_exists:
         table_rows = prelim_exists['table_rows']
         column_1 = []
@@ -1584,7 +1591,7 @@ def mastersheet():
         table_rows_final = table_rows_final[1:-2]
         column_1 = column_1[1:-2]
         week_number = final_exists['table_rows'][0][0]
-        column_headers.insert(0, week_number)
+        column_headers.insert(0, f'week {week_number_for_final_master}')
         tie_breaker_index = str(len(column_1) - 1)
 
         result = final_exists['result']
