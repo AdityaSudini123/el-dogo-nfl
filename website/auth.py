@@ -125,7 +125,7 @@ def rules():
     return render_template('rules.html')
 
 @auth.route("/select_picks", methods=['GET', 'POST'])
-@flask_login.fresh_login_required
+@login_required
 def select_picks():
     # flash(category='error', message='Picks are now closed')
     # return redirect(url_for('views.home'))
