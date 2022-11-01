@@ -1598,6 +1598,8 @@ def mastersheet():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
+            print(total_possible)
+            print(result[1][1])
             deduction = total_possible - result[1][1]
             message = f"Congratulations to this week\'s winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
 
