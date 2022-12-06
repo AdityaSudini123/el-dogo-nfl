@@ -1548,7 +1548,8 @@ def mastersheet():
     week_number_for_final_master = mongoDB['current_week'].find_one({'_id': 'schedule'})['week_number']
     week_number_for_final_master = week_number_for_final_master - 1
     final_master_week = mongoDB[f'week_{week_number_for_final_master}'].find_one({'_id': 'schedule'})
-    number_of_game_for_final_mastersheet = len(final_master_week) - 2
+    number_of_game_for_final_mastersheet = len(mongoDB['current_week'].find_one({'_id': 'schedule'})) - 2
+
 
     prelim_exists = mongoDB['current_week'].find_one({'_id': 'prelim_master'})
     final_exists = mongoDB['current_week'].find_one({'_id': 'final_master'})
@@ -1596,7 +1597,14 @@ def mastersheet():
 
         result = final_exists['result']
         if result[0] == 'tie':
-            message = f"Tie between {result[1][0]} and {result[1][1]}"
+            # index changes when there is a tie
+            if result[1] =='winner':
+                print(total_possible)
+                deduction = total_possible - result[2][1]
+                message = f"Congratulations to this week\'s winner by tie-breaker, \"{result[2][0]} with {result[2][1]} points (-{deduction})" \
+                          f"and a tie-breaker score of {result[2][2]}"
+            else:
+                message = f'Tie between {result[1][0]} and {result[1][1]}'
         elif result[0] == 'winner':
             print(total_possible)
             print(result[1][1])
