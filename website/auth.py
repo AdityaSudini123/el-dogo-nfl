@@ -1602,7 +1602,7 @@ def mastersheet():
             if result[1] =='winner':
                 print(total_possible)
                 deduction = total_possible - result[2][1]
-                message = f"Congratulations to this week\'s winner by tie-breaker, \"{result[2][0]} with {result[2][1]} points (-{deduction})" \
+                message = f"Congratulations to this week\'s winner by tie-breaker, \"{result[2][0]}\", with {result[2][1]} points (-{deduction})" \
                           f"and a tie-breaker score of {result[2][2]}"
             else:
                 message = f'Tie between {result[1][0]} and {result[1][1]}'
