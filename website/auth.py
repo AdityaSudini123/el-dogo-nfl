@@ -280,7 +280,7 @@ def master_archive_1():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 1 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -314,7 +314,7 @@ def master_archive_2():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 2 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -348,7 +348,7 @@ def master_archive_3():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 3 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -382,7 +382,7 @@ def master_archive_4():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 4 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -416,7 +416,7 @@ def master_archive_5():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 5 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -453,7 +453,7 @@ def master_archive_6():
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
             deduction = total_possible - result[1][1]
-            message = f'Winner was {result[1][0]} with {result[1][1]} points (-{deduction})'
+            message = f'Week 6 winner was {result[1][0]} with {result[1][1]} points (-{deduction})'
         return render_template('master_archive_6.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -487,7 +487,7 @@ def master_archive_7():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 7 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_7.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -521,7 +521,7 @@ def master_archive_8():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 8 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_8.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -555,7 +555,7 @@ def master_archive_9():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 9 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_9.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -589,7 +589,7 @@ def master_archive_10():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 10 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_10.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -623,7 +623,7 @@ def master_archive_11():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 11 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_11.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -657,7 +657,7 @@ def master_archive_12():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 12 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_12.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -691,7 +691,7 @@ def master_archive_13():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 13 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_13.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -725,7 +725,7 @@ def master_archive_14():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 14 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_14.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -759,7 +759,7 @@ def master_archive_15():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 15 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_15.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -793,8 +793,8 @@ def master_archive_16():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This week\'s winner is {result[1][0]} with {result[1][1]} points'
-        return render_template('master_archive_1.html', column_1=column_1, column_1_len=len(column_1),
+            message = f'Week 16 winner was {result[1][0]} with {result[1][1]} points'
+        return render_template('master_archive_16.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
                                table_footer=table_footer, message=message, footer_len=len(table_footer))
@@ -827,7 +827,7 @@ def master_archive_17():
         if result[0] == 'tie':
             message = f"Tie between {result[1][0]} and {result[1][1]}"
         elif result[0] == 'winner':
-            message = f'This weeks winner is {result[1][0]} with {result[1][1]} points'
+            message = f'Week 17 winner was {result[1][0]} with {result[1][1]} points'
         return render_template('master_archive_17.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
                                column_headers=column_headers, tie_breaker_index=tie_breaker_index,
@@ -1610,7 +1610,10 @@ def mastersheet():
             print(total_possible)
             print(result[1][1])
             deduction = total_possible - result[1][1]
-            message = f"Congratulations to this week\'s winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
+            if total_possible == result[1][1]:
+                message = f"Congratulations to this week\'s winner \"{result[1][0]}\" with an incredible perfect score of {result[1][1]} points (-{deduction})!"
+            else:
+                message = f"Congratulations to this week\'s winner \"{result[1][0]}\" with {result[1][1]} points (-{deduction})!"
 
         return render_template('mastersheet.html', column_1=column_1, column_1_len=len(column_1),
                                row_len=len(table_rows[0]), table_rows_final=table_rows_final,
