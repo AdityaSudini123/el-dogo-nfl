@@ -1,0 +1,181 @@
+<!DOCTYPE html>
+<html lang="en">
+{% extends 'base.html' %}
+
+<head>
+    {% block head %}
+    <meta name="viewport" content="screen" />
+    <link
+      href="https://cdn.jsdelivr.net/npm/bootstrap@5.0.2/dist/css/bootstrap.min.css"
+      rel="stylesheet"
+      integrity="sha384-EVSTQN3/azprG1Anm3QDgpJLIm9Nao0Yz1ztcQTwFspd3yD65VohhpuuCOmLASjC"
+      crossorigin="anonymous"
+    />
+    <style>
+        table {
+      border-collapse: separate;
+      border-spacing: 0;
+      border-top: 1px solid black;
+    }
+
+    td,
+    th {
+      margin: 0;
+      border: 1px solid grey;
+      white-space: wrap;
+      border-top-width: 1px;
+    }
+    td.day {
+      background: red;
+    }
+      th.vertical {
+      writing-mode: horizontal-tb;
+      text-orientation: upright;
+    }
+
+    div.master_prelim {
+      width: 100%;
+      overflow-x: auto;
+      margin-left: 185px;
+      overflow-y: auto;
+      padding: 0;
+    }
+
+    .headcol, .headcol-day {
+      position: absolute;
+      background: white;
+      width: 259px;
+      left: 0;
+      top: auto;
+      border-top-width: 1px;
+      /*only relevant for first row*/
+      margin-top: 0px;
+      /*compensate for top border*/
+    }
+
+    .headcol:before {
+      content:;
+    }
+
+    .short {
+      background: white;
+      letter-spacing: 0.2;
+    }
+
+    </style>
+    {% endblock %}
+</head>
+{% block content %}
+<body>
+    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+      <div id="nav" class="container-fluid">
+        <button
+          class="navbar-toggler"
+          type="button"
+          data-bs-toggle="collapse"
+          data-bs-target="#navbar"
+        >
+          <span class="navbar-toggler-icon"></span>
+        </button>
+        <div class="collapse navbar-collapse" id="navbar">
+          <div class="navbar-nav">
+            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
+            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/rules">Rules</a>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
+                Personal Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <div class="dropdown">
+              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">
+                Mastersheet Archives
+              </button>
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
+                {% for i in range(1, 18) %}
+                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                {% endfor %}
+              </ul>
+            </div>
+            <a class="nav-item nav-link" href="/contact">Contact</a>
+            <a class="nav-item nav-link" href="/logout">logout</a>
+          </div>
+        </div>
+      </div>
+    </nav>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+      {% if messages %}
+        {% for category, message in messages %}
+        {% if category == "error" %}
+        <div class="alert alert-danger alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% elif category == "success" %}
+        <div class="alert alert-success alter-dismissible fade show" role="alert">
+          {{ message }}
+          <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+        </div>
+        {% else %}
+        <div class="alert alert-primary" role="alert">
+          {{ message }}
+        </div>
+        {% endif %}
+        {% endfor %}
+      {% endif %}
+    {% endwith %}
+    <br>
+    <br>
+    <br>
+    <h4 align="center">{{message}}</h4>
+    <br>
+    <h3 align="center">Week 18 Mastersheet Archive</h3>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+    </div>
+    <div class="master_prelim">
+      <table id="master_prelim" class="table table-bordered">
+      <thead>
+      <tr>
+        {% for header in column_headers %}
+            <th class="vertical">{{header}}</th>
+        {% endfor %}
+      </tr>
+      </thead>
+      {% for i in range(column_1_len) %}
+        <tr>
+          {% if i % 3 == 0 %}
+            <th align="left" class="headcol bg-dark text-white">{{column_1[i]}}</th>
+          {% else %}
+            <th align="center" class="headcol">{{column_1[i]}}</th>
+          {% endif %}
+      {% for k in range(row_len) %}
+              {% if i % 3 == 0 %}
+                <td align="center" class="short bg-dark text-black">{{table_rows_final[i][k]}}</td>
+              {% else %}
+                <td align="center" class="short bg-white text-black">{{table_rows_final[i][k]}}</td>
+              {% endif %}
+          {% endfor %}
+        </tr>
+      {% endfor %}
+      <tfoot>
+        {% for footer in table_footer %}
+            <tr class="short bg-warning text-black">
+                {% for i in footer %}
+                    <td align="center" class="short bg-warning text-black">{{i}}</td>
+                {% endfor %}
+            </tr>
+        {% endfor %}
+      </tfoot>
+      </table>
+    </div>
+    <br>
+    <br>
+</body>
+{% endblock %}
+</html>
