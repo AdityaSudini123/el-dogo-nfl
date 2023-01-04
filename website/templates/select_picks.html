@@ -21,7 +21,7 @@
                 Personal Archives
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-                {% for i in range(1, 18) %}
+                {% for i in range(1, 19) %}
                   <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
                 {% endfor %}
               </ul>
@@ -31,7 +31,7 @@
                 Mastersheet Archives
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
-                {% for i in range(1, 18) %}
+                {% for i in range(1, 19) %}
                   <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
                 {% endfor %}
               </ul>
