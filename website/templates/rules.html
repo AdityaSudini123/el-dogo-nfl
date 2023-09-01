@@ -4,7 +4,48 @@
 
 <body>
 {% block content %}
-    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+<!--    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">-->
+<!--      <div class="container-fluid">-->
+<!--        <button-->
+<!--          class="navbar-toggler"-->
+<!--          type="button"-->
+<!--          data-bs-toggle="collapse"-->
+<!--          data-bs-target="#navbar"-->
+<!--        >-->
+<!--          <span class="navbar-toggler-icon"></span>-->
+<!--        </button>-->
+<!--        <div class="collapse navbar-collapse" id="navbar">-->
+<!--          <div class="navbar-nav">-->
+<!--            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>-->
+<!--            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>-->
+<!--            <a class="nav-item nav-link" href="/rules">Rules</a>-->
+<!--            <div class="dropdown">-->
+<!--              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                Personal Archives-->
+<!--              </button>-->
+<!--              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">-->
+<!--                {% for i in range(1, 18) %}-->
+<!--                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>-->
+<!--                {% endfor %}-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--            <div class="dropdown">-->
+<!--              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                Mastersheet Archives-->
+<!--              </button>-->
+<!--              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">-->
+<!--                {% for i in range(1, 18) %}-->
+<!--                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>-->
+<!--                {% endfor %}-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--            <a class="nav-item nav-link" href="/contact">Contact</a>-->
+<!--            <a class="nav-item nav-link" href="/logout">logout</a>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </nav>-->
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -16,8 +57,8 @@
         </button>
         <div class="collapse navbar-collapse" id="navbar">
           <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
-            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/home">Select Picks</a>
+            <a class="nav-item nav-link" href="/home">Master Sheet</a>
             <a class="nav-item nav-link" href="/rules">Rules</a>
             <div class="dropdown">
               <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -25,7 +66,7 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                 {% for i in range(1, 18) %}
-                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
+                  <li><a class="dropdown-item" href="/home">Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -35,7 +76,7 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
                 {% for i in range(1, 18) %}
-                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                  <li><a class="dropdown-item" href="/home" value="week_{{i}}}" >Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -48,89 +89,129 @@
     <br>
     <br>
     <br>
-
-    <h3 align="center">PUZZLER RULES – 2022 SEASON</h3>
+    <h3 align="center">PUZZLER RULES – 2023 SEASON</h3>
     <p>
-      WELCOME BACK PUZZLER FANS! As always, we have given last year’s players first choice to get
-in so we have only a handful of new players this season. Generally, most of the rules will remain the
-same. There are 18 weeks of football with each team playing 17 games and having one week
-off during the season. The number of games played will vary from week to week, so please take
-careful notice of each week to make sure that you number correctly according to the number of
-games played that week. Here are the PUZZLER rules:
-<br><br>1. For the first time ever, the Puzzler is going all digital. Except for a handful of the Puzzler-
-faithful who are grandfathered in (you know who you are), all entries must be made on the
-website. No more spreadsheets. We’re designing the website from scratch so we may
-inadvertently overlook a few opportunities to improve the Puzzler. We’re open to suggestions
-going forward &amp; we may update/improve the website periodically. Explore the website to
-familiarize yourself with it and feel free to email us should you have any questions.
-<br><br>2. All players must register on the website with their name, email address and username.
-Please use your PLAYER NAME as your username when registering. The website isn’t
-fancy looking and is pretty basic because it was designed to resemble the spreadsheet system
-of years past. The most important thing is that it works.
-<br><br>3. The website is designed to be essentially idiot-proof so that there is no way for a player to
-make an error when submitting his/her picks (aside from any of you that may decide to pick the
-hapless Bears to win in any given week). If you do make an error when submitting your picks,
-the website will not accept your entry and you must go back to fix your error(s). Once your
-picks are error free, your picks will be accepted by the website. There will be no changing
-your picks once your picks have been accepted by the website.
-<br><br>4. The master sheet for each week will be posted on the website at 9am PST on the
-Wednesday after each deadline. For reference purposes, the master sheets for previous
-weeks will be viewable on the website. Each player’s weekly picks will also be viewable on the
-website (but viewable only by that player). Please note that the website is not viewable by
-the general public and only registered players will have access to the substantive
-elements of the website.
-<br><br>5. Total cost to play is $200 which covers the entire 18-week season plus a bonus square in the
-Super Bowl bonus pool. This equates to a cost of just over $11 per week. Once you pay up
-and begin the first week, you must continue through all 18 weeks. If you drop out in any week,
-you’ll be out for good and you will forfeit all prize money for the remaining weeks and for the
-Super-Bowl bonus pool. There are no refunds for any drop-outs. See #7 &amp;12 below for more
-detail on the Super Bowl bonus pool.
-<br><br>6. Winning prize each week is $1,000.00. Unlike in previous years, winners will NOT be
-allowed/encouraged to tip the house. Tipping the house made sense in previous years
-because of the enormous time &amp; effort it took to run the Puzzler. However, the entire point of
-moving the Puzzler online is to automate much of this workload and thereby make the Puzzler
-much easier to administer. There you have it. No tipping.
-<br><br>7. The Super Bowl bonus pool will have a prize of $250 per quarter this year (which covers a
-square for the randomly drawn 100 players) plus $250 for the mini-pool winner (covering the
-first randomly drawn 10 players). Last year the prize was $375 per quarter plus the $375 for
-the mini-pool winner but we’re reducing it this year to help cover the cost of the website
-
-buildout and ongoing operating costs (which is costing a few grand in total so the extra $625
-from this season’s Super Bowl bonus pool only covers only a fraction of these costs - I’m
-personally eating the rest).
-<br><br>8. Entries must be in by Tuesdays at 6:00 PM PST – this is a change from previous years
-so be sure to make a note of it. The first week’s entry is due on Tuesday 9/6/22.
-<br><br>9. There still may be NFL scheduling changes due to the uncertainty poised by the pandemic. A
-few things to note about this 2022 season:
-(a) As mentioned above, there will be 18 weeks of games again this season. The first 5
-weeks will be the full schedule of 16 games per week.
-(b) There will be Thursday games scheduled in each week except for the final week.
-(c) Week 2 has two Monday Night games. The 2 nd of the two Monday night games will
-serve as the tie-breaker for Week 2.
-(c) Weeks 6 - 11 and weeks 13 - 14 are the bye-weeks which will consist of only 13 or 14
-games per week.
-(d) In Week 16, there are several Saturday games (Christmas Eve) and there will only be 3
-games on Sunday (Christmas Day).
-(e) As always, any games may be changed at the NFL’s discretion.
-<br><br>10. Tie-games lose the value of the points placed on that game. However, if games are (a)
-cancelled; (b) rescheduled beyond the Monday night game for that week; or (c) forfeited
-for any reason, points placed on either team will be considered a “win.”
-<br><br>11. Don’t forget to include the TIE-BREAKER score which will be the number closest to the
-combined total score of both teams on the Monday night game. No over-under. The player
-who picks closest to the combined total score of the Monday night game wins the tie-breaker.
-In the unlikely event of a tie on the tie-breaker, the $1K prize will be split equally among the
-tied players.
-<br><br>12. Super Bowl bonus pool. Because there are 110 players and only 100 squares on the “main”
-Super Bowl card, 10 players will be included in the “mini-pool” instead of the “main” Super
-Bowl pool. The first 10 names randomly drawn will be put into a “mini-pool” in which they will
-each receive a number from 0 to 9. The total final score of both teams will be added together
-and the player having the last digit of that total will be declared the winner of the “mini-pool”
-($250). The “main” Super Bowl card will then be filled from the remaining 100 players. The
-first name drawn will be in square one (row 1, column 1), the next name drawn will be in
-square two (row 1, column 2) and so on down the line. When the entire card is filled, the
-numbers will be drawn. The “main” Super Bowl” prize will be $250 for each of the 4 Quarters.
-<br><br>
-<p align="center">GOOD LUCK TO YOU ALL!</p>
+      <p>WELCOME BACK PUZZLERS! As is tradition, we have given last year’s players first priority to play
+the 2023 season but we also have a good roster of new players for this season.
+In honor of our 50 th SEASON and for the first time ever, we will bestow an additional award to the
+player with the best overall score for the entire 2023 season as well as a lesser award to the player
+with the worst overall score (see #11 &amp; 12 below). Aside from that, the other prizes and rules are
+  unchanged.</p>
+<p>This is the greatest football pool in the world, here’s why:
+<br>$250 (one-time entry fee per player) to play the entire 2023 season.
+<br>$1,000 prize per week to the player with the best score for that week
+<br>$5,000 prize at season end to the player with the BEST score for the entire regular season
+<br>$250 prize to the player with the WORST score for the entire regular season
+<br>$375 prize to the winning squares randomly selected for the bonus Super Bowl Squares &amp; Mini-Pool</p>
+<br><p>Here are the PUZZLER rules:</p>
+<br><p>1. As with last season, all player picks must be submitted on the website (except for a handful of
+Puzzler-faithful who are grandfathered in via telephone entry). The website is basic &amp; simple –
+this is by design and we would like to keep it that way. It is also a private website intended for
+use only by the current players. That said, it has been designed by non-professionals and, as
+with any website, technical glitches may occur from time to time (apologies in advance). We
+may update/improve the website periodically and we’re open to ideas/suggestions from the
+players going forward. Explore the website to familiarize yourself with it and feel free to email
+us with any questions.</p>
+<br><p>2. All players must register on the website with their name, email address and username -
+even if you played last season. Your username is your PLAYER NAME. Whichever way
+you spell your username on the login page will be the way your player name appears on the
+website. Any combination of letters (upper or lowercase) or numbers can be used (with or
+without spaces) but do not use punctuation. It is extremely important for each player to
+regularly check their email inbox for the email account that has been registered on the
+website. This is vital because all Puzzler communication throughout the season will be
+via email.</p>
+<br><p>3. Once you are logged in, your player name will be listed on each page of the website.
+Before entering your picks for any given week, be sure to check that you are currently
+logged in under the correct player name. If for any reason a different player name other
+than your own is displayed on the website as currently being “logged in”, please log out
+of the website and then log back in to fix the problem. If this does not fix the problem,
+contact us immediately. In fact, it is always best to manually log out of the website and
+then log back in each time &amp; before entering your picks.</p>
+<br><p>4. We tried to design the website so that it is impossible for any player to incorrectly submit
+his/her picks. If you incorrectly enter the values for your picks on any given week, the website
+will not accept your entry and you must go back to fix your error(s). Once your picks are error
+free, they will be accepted by the website. There is no changing your picks once they have
+been submitted &amp; accepted by the website.</p>
+<br><p>5. We try to post the master sheet that lists all player picks for each week by noon Pacific
+time on the Wednesday after each deadline. The winning player will be announced on the
+master sheet for each week. Each player’s current picks for that week will also be viewable on
+the website but viewable only by that player. For reference purposes, the master sheets for
+previous weeks will be viewable by all players. Please note that the website is not viewable by
+the general public and only registered players will have access to anything beyond the login
+page. We will email all of the winning players as they are determined to arrange for payment
+instructions.</p>
+<br><p>6. Total cost to play the 2023 season is $250 which covers the entire 18 weeks of regular season
+plus the bonus Super Bowl Squares &amp; Mini-Pool. Once you pay your entry fee and begin the
+first week, you must play and submit picks for all 18 weeks as they occur (each player is
+allowed one mulligan in case you miss the deadline for any week). We only want players who
+are dedicated to playing the entire season of the El Dogo Puzzler. If you drop out of the
+Puzzler for any reason, you’ll be out for good and you will forfeit all chances to win the weekly
+prize money (#7 below) as well as the season-ending bonus prizes for best &amp; worst player
+(#11 &amp; 12 below); however, you will still be allowed to play the bonus Super Bowl Squares &amp;
+Mini-Pool (#13 below). There are no refunds for any drop-outs.</p>
+<br><p>7. Weekly entries must be submitted by the deadline or your picks will not count for that
+week. The weekly deadline is Tuesdays at 7:00 PM Pacific time.</p>
+<br><p>8. The winning prize each week is $1,000.00 and subject to the tie-breaker (which is used ONLY
+in the event that multiple players have the same winning score for that week). Note that when
+submitting your picks, you must also submit your tie-breaker value which is whatever number
+you think will be the combined final score of both teams for that week’s Monday night
+game. The player with the closest score wins the tie-breaker (no over/unders) &amp; the $1K
+weekly prize.  In the unlikely event that there is a tie in the tie-breaker, the $1K will be split
+evenly among the tied players.</p>
+<br><p>9. The 2023 NFL schedule is subject to change and we will follow it as best we can. The NFL
+also likes to get cute with its scheduling every now &amp; again so note the following (also subject
+to change but we will try to advise all players accordingly):</p>
+<br><p>(a) There are 18 regular weeks of games this season. The first 4 weeks will be the full
+schedule of 16 games per week. The number of games played per week will vary after
+week 4.</p>
+<br><p>(b) There are Thursday night games scheduled for each week except for week 18.</p>
+<br><p>(c) Weeks 2, 3, 14 &amp; 16 have multiple Monday Night games. For purposes of the Puzzler tie-</p>
+breaker, the last of each of those Monday night games will control the tie breaker for that
+week and are currently set as follows:
+<br><p>Week 2 tie-breaker game: Cleveland vs Pittsburgh</p>
+<br><p>Week 3 tie-breaker game: Rams vs Cincinatti</p>
+<br><p>Week 14 tie-breaker game: Green Bay vs Giants</p>
+<br><p>Week 16 tie-breaker game: Baltimore vs San Francisco</p>
+<br><p>(d) There are no Monday night games at all for weeks 17 &amp; 18 so the tie-breaker game for
+these weeks are as follows:</p>
+<br><p>Week 17 tie-breaker game: Green Bay vs Minnesota</p>
+<br><p>Week 18 tie-breaker game: Pittsburgh vs Baltimore</p>
+<br><p>10. FOR ALL PLAYERS, any games that end in a tie count as a “loss” for all players (i.e.
+each player loses the value of the points placed on that game regardless of which team was picked to win). However, if a game is</p>
+      <br><p>(a) cancelled;</p>
+      <br><p>(b) rescheduled beyond the final regularly scheduled Monday night game for that week; or</p>
+      <br><p>(c) forfeited for any reason, points placed on either team will be considered a “win” for all players.</p>
+<br><p>11. Season End Best Player Award. $5000 awarded at season end to the player with the BEST
+score for the entire regular season (picks must have been submitted for a minimum of 17
+weeks &amp; the lowest weekly score for each player will be dropped). In the event one or more
+players have the same season ending best score, the winner will be determined as follows (in
+this order):<p>
+      <br><p>(a) the player that won the most weeks of the 2023 Puzzler;</p>
+      <br><p>(b) if no player won any weeks or if players still tied after factoring in the number of winning weeks, the
+      player that won the most games (or lost the fewest games); and if still tied</p>
+      <br><p>(c) the $5K prize will be split evenly among the tied players.</p>
+<br><p>12. Season End Worst Player Award. $250 awarded at season end to the player with the
+WORST score for the entire regular season (picks must have been submitted for a minimum of
+17 weeks &amp; the HIGHEST weekly score for that player will be dropped). In the event of a tie,
+the $250 prize will be split evenly among the tied players.</p>
+<br><p>13. Bonus Super Bowl Squares &amp; Mini-Pool Awards. The Super Bowl bonus pool will have a
+prize of $375 per quarter (which covers a square for each of the randomly drawn 100 players)
+plus a $375 prize for the mini-pool winner (covering the first randomly drawn 10 players).
+Here’s how it works:</p>
+<br><p>Because there are 110 Puzzler players but only 100 squares on the “main” Super Bowl
+squares card, the first 10 names randomly drawn will be put into a “mini-pool” (instead of the
+&quot;main&quot; pool) in which they will each receive a number from 0 to 9.</p>
+<br><p>The “main” Super Bowl card will then be filled from the remaining 100 players. The first name
+drawn will be in square one (row 1, column 1), the next name drawn will be in square two (row
+1, column 2) and so on down the line. When the entire card is filled, the numbers will be
+drawn.</p>
+<br><p>The bonus Super Bowl Squares and Mini-Pool will be emailed to all players prior to the start of
+the Super Bowl.</p>
+<br><p>Mini-Pool Super Bowl Prize: The total final score of both Super Bowl teams will be
+added together and the player having the last digit of that total will be declared the
+winner of the “mini-pool” and will be awarded $375.</p>
+<br><p>Main Pool Super Bowl Prize: $375 to the winning square for each of the 4 quarters.</p>
+    <p align="center">GOOD LUCK TO YOU ALL!</p>
     </p>
 {% endblock %}
 </body>

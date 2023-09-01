@@ -4,7 +4,48 @@
 
 <body>
 {% block content %}
-    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
+<!--    <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">-->
+<!--      <div class="container-fluid">-->
+<!--        <button-->
+<!--          class="navbar-toggler"-->
+<!--          type="button"-->
+<!--          data-bs-toggle="collapse"-->
+<!--          data-bs-target="#navbar"-->
+<!--        >-->
+<!--          <span class="navbar-toggler-icon"></span>-->
+<!--        </button>-->
+<!--        <div class="collapse navbar-collapse" id="navbar">-->
+<!--          <div class="navbar-nav">-->
+<!--            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>-->
+<!--            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>-->
+<!--            <a class="nav-item nav-link" href="/rules">Rules</a>-->
+<!--            <div class="dropdown">-->
+<!--              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                Personal Archives-->
+<!--              </button>-->
+<!--              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">-->
+<!--                {% for i in range(1, 18) %}-->
+<!--                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>-->
+<!--                {% endfor %}-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--            <div class="dropdown">-->
+<!--              <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton2" data-bs-toggle="dropdown" aria-expanded="false">-->
+<!--                Mastersheet Archives-->
+<!--              </button>-->
+<!--              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">-->
+<!--                {% for i in range(1, 18) %}-->
+<!--                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>-->
+<!--                {% endfor %}-->
+<!--              </ul>-->
+<!--            </div>-->
+<!--            <a class="nav-item nav-link" href="/contact">Contact</a>-->
+<!--            <a class="nav-item nav-link" href="/logout">logout</a>-->
+<!--          </div>-->
+<!--        </div>-->
+<!--      </div>-->
+<!--    </nav>-->
+<nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
           class="navbar-toggler"
@@ -16,8 +57,8 @@
         </button>
         <div class="collapse navbar-collapse" id="navbar">
           <div class="navbar-nav">
-            <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
-            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
+            <a class="nav-item nav-link" href="/home">Select Picks</a>
+            <a class="nav-item nav-link" href="/home">Master Sheet</a>
             <a class="nav-item nav-link" href="/rules">Rules</a>
             <div class="dropdown">
               <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
@@ -25,7 +66,7 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
                 {% for i in range(1, 18) %}
-                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
+                  <li><a class="dropdown-item" href="/home">Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -35,7 +76,7 @@
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
                 {% for i in range(1, 18) %}
-                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                  <li><a class="dropdown-item" href="/home" value="week_{{i}}}" >Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -72,7 +113,7 @@
     <div class="container bg-warning">
       <p class="text-black">Currently logged in as {{current_user.username}}</p>
     </div>
-    <h1 align="center">Welcome to the 49th annual El Dogo Puzzler</h1>
+    <h1 align="center">Welcome to the 50th annual El Dogo Puzzler</h1>
     <h2 align="center">Gone with pen and paper, now online!</h2>
     <br>
     <br>
