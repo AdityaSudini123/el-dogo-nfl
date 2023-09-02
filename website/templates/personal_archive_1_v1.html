@@ -75,33 +75,29 @@
     <h2 align="center">Week 1 player archive</h2>
 <br>
     <div>
-        <table class="table table-bordered" border="2">
+      {% for i in range(0, len) %}
+        <table class="table" border="2">
           <thead>
             <tr >
-<!--              <th scope="col">{{game_days[i]}}</th>-->
-              <th align="center" scope="col">Matchup</th>
-              <th align="center" scope="col">Your Pick</th>
+              <th scope="col">{{game_days[i]}}</th>
+              <th scope="col">Matchup</th>
+              <th scope="col">Your Pick</th>
             </tr>
           </thead>
           <tbody>
-          {% for i in range(0, len) %}
-                <th scope="col">{{game_days[i]}}</th>
-                <tr>
-                  <th style="font-weight:normal" scope="row"></th>
-                  <td><b>{{away_teams[i]}}</b></td>
-                  <td><b>{{away_confidence[i]}}</b></td>
-                </tr>
-                <tr>
-                  <th style="font-weight:normal" scope="row"></th>
-                  <td><b>{{home_teams[i]}}</b></td>
-                  <td><b>{{home_confidence[i]}}</b></td>
-                </tr>
-          {% endfor %}
+            <tr>
+              <th style="font-weight:normal" scope="row">Away Team</th>
+              <td><b>{{away_teams[i]}}</b></td>
+              <td><b>{{away_confidence[i]}}</b></td>
+            </tr>
+            <tr>
+              <th style="font-weight:normal" scope="row">Home Team</th>
+              <td><b>{{home_teams[i]}}</b></td>
+              <td><b>{{home_confidence[i]}}</b></td>
+            </tr>
           </tbody>
         </table>
-
-
-
+        {% endfor %}
         <h5>Your tie-breaker score: {{tie_breaker}}</h5>
       <br>
       <br>
