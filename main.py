@@ -12,6 +12,6 @@ app = create_app()
 if __name__ == '__main__':
     app.run(debug=True, port='0000', host='localhost')
 
-#     Personal Access token: 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 --> never expires apparently
+#     Personal Access token: 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 --> never expires apparently
 
 

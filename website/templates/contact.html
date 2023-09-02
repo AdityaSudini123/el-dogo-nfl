@@ -43,6 +43,9 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
+    <div class="container bg-warning">
+        <p class="text-black">Currently logged in as <b>{{current_user.username}}</b></p>
+    </div>
     <br>
     <br>
     <center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>

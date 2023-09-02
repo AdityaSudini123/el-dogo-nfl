@@ -48,7 +48,7 @@
     <br>
     <br>
     <div class="container bg-warning">
-      <p class="text-black">Currently logged in as {{current_user.username}}</p>
+      <p class="text-black">Currently logged in as <b>{{current_user.username}}</b></p>
     </div>
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
@@ -73,7 +73,7 @@
     {% endwith %}
 
 <h1 align="center" xmlns="http://www.w3.org/1999/html">Week {{week_number}}</h1>
-<p align="center"><b>Please ensure you are logged into the correct profile BEFORE selecting picks</b></p>
+<p style="color: red" align="center"><b>Please ensure you are logged into the correct profile BEFORE selecting picks</b></p>
 <p align="center"><b>* There are {{len}} games this week *</b></p>
 <p align="center"><b> * Your total this week should equal {{total_possible}} *</b></p>
 <p align="center"><b>* Picks are due Tuesday at 7 PM PST *</b></p>

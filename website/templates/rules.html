@@ -1,9 +1,8 @@
 {% extends "base.html" %}
 {% block title %}RULES{% endblock %}
 
-
-<body>
 {% block content %}
+<body>
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
         <button
@@ -89,6 +88,9 @@
     <br>
     <br>
     <br>
+    <div class="container bg-warning">
+      <p class="text-black">Currently logged in as <b>{{current_user.username}}</b></p>
+    </div>
     <h3 align="center">PUZZLER RULES – 2023 SEASON</h3>
     <p>
       <p>WELCOME BACK PUZZLERS! As is tradition, we have given last year’s players first priority to play
@@ -213,5 +215,5 @@ winner of the “mini-pool” and will be awarded $375.</p>
 <br><p>Main Pool Super Bowl Prize: $375 to the winning square for each of the 4 quarters.</p>
     <p align="center">GOOD LUCK TO YOU ALL!</p>
     </p>
-{% endblock %}
 </body>
+{% endblock %}

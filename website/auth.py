@@ -174,7 +174,7 @@ def logout():
 @auth.route('/rules', methods=['GET', 'POST'])
 @login_required
 def rules():
-    return render_template('rules.html')
+    return render_template('rules.html', username=current_user.username)
 
 @auth.route("/select_picks", methods=['GET', 'POST'])
 @login_required
@@ -261,6 +261,16 @@ def select_picks():
             for item in teams_dict.items():
                 if item[1] != '0':
                     winners_dict[item[0]] = item[1]
+            picks = list(winners_dict.values())
+            print(picks)
+            picks2 = ['']
+            for i in range(1, len(picks)+1):
+                print(i)
+                print(picks[i-1])
+                picks2.append(picks[i-1])
+                if picks2[i] == picks2[i-1]:
+                    flash('Your picks have not been submitted. Please review the rules and ensure your picks are entered correctly', 'error')
+                    return redirect(url_for('auth.select_picks'))
         tie_breaker = request.form.get('tie_breaker')
         new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
                      "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker, 'time': datetime.datetime.now()}
@@ -1057,7 +1067,7 @@ def personal_archive_1():
     return render_template('personal_archive_1.html', len=len(home_teams), home_teams=home_teams,
                            away_teams=away_teams,
                            game_days=game_days, home_confidence=home_confidence, away_confidence=away_confidence,
-                           tie_breaker=tie_breaker)
+                           tie_breaker=tie_breaker, username=current_user.username)
 
 # THIS IS THE ORIGINAL PERSONAL_ARCHIVE_1
 # @auth.route('/personal_archive_1')
