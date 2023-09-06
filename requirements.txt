@@ -36,3 +36,5 @@ SQLAlchemy==1.4.32
 urllib3==1.26.9
 Werkzeug==2.0.3
 wheel==0.37.1
+flask-apscheduler==1.12.4
+
