@@ -1,14 +1,15 @@
 {% extends "base_test.html" %}
-{% block title %}CONTACT{% endblock %}
 
+{% block title %}Home{% endblock %}
 
 <body>
 {% block content %}
+    <h1 align="center">Welcome to the 50th annual El Dogo Puzzler</h1>
+    <h2 align="center">Gone with pen and paper, now online!</h2>
     <br>
     <br>
     <center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
     <br>
-    <p>Primary contact: ElDogoPuzzler@gmail.com</p>
-
+    <br>
 {% endblock %}
 </body>

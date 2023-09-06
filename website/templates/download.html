@@ -1,8 +1,4 @@
-{% extends "base.html" %}
-
-{% block title %}Home{% endblock %}
-
-<body>
+{% extends "base.html" %} {% block title %}Download Mastersheet{% endblock %}
 {% block content %}
     <nav class="navbar fixed-top navbar-expand-lg navbar-dark bg-dark">
       <div class="container-fluid">
@@ -18,16 +14,16 @@
           <div class="navbar-nav">
             <a class="nav-item nav-link" href="/select_picks">Select Picks</a>
 <!--            <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>-->
-             <a class="nav-item nav-link" href="/mastersheet">Master Sheet</a>
+                        <a class="nav-item nav-link" href="/home">Master Sheet</a>
             <a class="nav-item nav-link" href="/rules">Rules</a>
             <div class="dropdown">
               <button class="btn btn-dark bg-dark dropdown-toggle" type="button" id="dropdownMenuButton1" data-bs-toggle="dropdown" aria-expanded="false">
                 Personal Archives
               </button>
-                <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
-<!--                    CHANGE THE RANGE BACK-->
+              <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton1">
+<!--                CAHNGE THE RANGE BACK TO 18-->
                 {% for i in range(1, 2) %}
-                  <li><a class="dropdown-item" href="personal_archive_{{i}}">Week {{i}}</a></li>
+                  <li><a class="dropdown-item" href="/personal_archive_{{i}}">Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -36,9 +32,8 @@
                 Mastersheet Archives
               </button>
               <ul class="dropdown-menu" aria-labelledby="dropdownMenuButton2">
-<!--                CHANGE THE RANGE BACK-->
-                  {% for i in range(0) %}
-                  <li><a class="dropdown-item" href="/master_archive_{{i}}" value="week_{{i}}}" >Week {{i}}</a></li>
+                {% for i in range(0) %}
+                  <li><a class="dropdown-item" href="/home" value="week_{{i}}}" >Week {{i}}</a></li>
                 {% endfor %}
               </ul>
             </div>
@@ -51,6 +46,9 @@
     <br>
     <br>
     <br>
+    <div class="container bg-warning">
+        <h5 class="text-black">Currently logged in as <b>{{current_user.username}}</b></h5>
+    </div>
     {% with messages = get_flashed_messages(with_categories=True) %}
       {% if messages %}
         {% for category, message in messages %}
@@ -72,15 +70,16 @@
         {% endfor %}
       {% endif %}
     {% endwith %}
-    <div class="container bg-warning">
-      <h5 class="text-black">Currently logged in as <b>{{current_user.username}}</b></h5>
-    </div>
-    <h1 align="center">Welcome to the 50th annual El Dogo Puzzler</h1>
-    <h2 align="center">Gone with pen and paper, now online!</h2>
-    <br>
-    <br>
-    <center><img src="{{ url_for('static', filename='images/puzzler_logo.png')}}" width="500" height="500"></center>
-    <br>
-    <br>
+
+<form id="download" method="post">
+    <style>
+      input::-webkit-outer-spin-button,
+      input::-webkit-inner-spin-button {
+        display: none;
+      }
+    </style>
+    <h6>DOWNLOAD MASTERSHEET</h6>
+    <input name="masternumber" type="number" placeholder="enter a week number">
+    <input id="masternumbersubmit" name="masternumbersubmit"  type="submit" value="submit">
+</form>
 {% endblock %}
-</body>
