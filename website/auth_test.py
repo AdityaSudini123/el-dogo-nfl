@@ -14,8 +14,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from website.scraper import schedule_scraper, result_scraper
 import sqlite3 as sl
 import pandas as pd
-import openpyxl
-from openpyxl import open
 from gridfs import GridFS
 
 
