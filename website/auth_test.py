@@ -23,8 +23,6 @@ results_collection = mongoDB["weekly_results"]
 user_data_collection = mongoDB["user_data"]
 user_picks_collection = mongoDB["user_weekly_picks"]
 
-fs = GridFS(mongoDB)
-
 auth = Blueprint("auth", __name__)
 
 @login_required
