@@ -168,10 +168,10 @@ def select_picks():
     pst = pytz.timezone('America/Los_Angeles')
     dt = datetime.datetime.now(pst)
     # Monday = 0, Tuesday = 1 and so on
-    if (dt.weekday() == 1 and dt.time() > datetime.time(19, 0, 0, 0, tzinfo=pytz.timezone('America/Los_Angeles'))):
-        flash('Picks are currently closed', 'error')
-        return redirect(url_for('views.home'))
-    elif dt.weekday() == 2:
+    # if (dt.weekday() == 1 and dt.time() > datetime.time(19, 0, 0, 0, tzinfo=pytz.timezone('America/Los_Angeles'))):
+    #     flash('Picks are currently closed', 'error')
+    #     return redirect(url_for('views.home'))
+    if dt.weekday() == 2 and dt.time() > datetime.time(19, 0, 0, 0, tzinfo=pytz.timezone('America/Los_Angeles')):
         flash('Picks are currently closed', 'error')
         return redirect(url_for('views.home'))
     elif dt.weekday() == 3:

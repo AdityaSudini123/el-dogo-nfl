@@ -15,7 +15,7 @@ mongoDB = cluster["ElDogoPuzzler2023"]
 app = create_app()[0]
 scheduler = create_app()[1]
 
-def scheduledtask():
+def getmasterprelim():
     schedule = mongoDB['week_1'].find_one({'_id': 'schedule'})
     weeknumber = schedule.pop('week_number')
     schedule.pop('_id')
@@ -77,10 +77,10 @@ def scheduledtask():
 
 
 if __name__ == '__main__':
-    scheduler.add_job(id='test', func=scheduledtask, trigger='cron', day_of_week="tue", hour=19, minute=1)
+    scheduler.add_job(id='test', func=getmasterprelim, trigger='cron', day_of_week="wed", hour=19, minute=1)
     app.run(debug=True, port='0000', host='localhost', use_reloader=False)
     # app.run(debug=True, port='0000', host='localhost')
 
-#     Personal Access token: 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 --> never expires apparently
+#     Personal Access token: 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 --> never expires apparently
 
 
