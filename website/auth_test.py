@@ -14,7 +14,6 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from website.scraper import schedule_scraper, result_scraper
 import sqlite3 as sl
 import pandas as pd
-from gridfs import GridFS
 
 
 cluster = MongoClient('mongodb+srv://AdityaSudini:Harry_Potter12345@cluster0.gsst9ye.mongodb.net/?retryWrites=true&w=majority')
