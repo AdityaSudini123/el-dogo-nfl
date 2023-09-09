@@ -9,6 +9,7 @@ db = SQLAlchemy()
 
 class Config:
     SCHEDULER_API_ENABLED = True
+    # SCHEDULER_TIMEZONE = {}
 
 def create_app():
     app = Flask(__name__)
@@ -22,7 +23,6 @@ def create_app():
         app.config.from_object(Config())
         scheduler = APScheduler()
         scheduler.init_app(app)
-        scheduler.start()
 
         db.init_app(app)
 
