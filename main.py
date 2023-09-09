@@ -19,12 +19,14 @@ def getmasterprelim():
     schedule = mongoDB['week_1'].find_one({'_id': 'schedule'})
     weeknumber = schedule.pop('week_number')
     schedule.pop('_id')
-    # allteams = [f'Week {weeknumber}']
+
     column1 = []
     allteams = []
     hometeams = []
     awayteams = []
     for game in schedule.values():
+        print(game)
+        print(type(game))
         column1.append(game['day'] + ", " + game['date'])
         column1.append(game['away team'])
         column1.append(game['home team'])
@@ -69,16 +71,21 @@ def getmasterprelim():
     # colsformaster[f'Week {weeknumber}'] = column1
     # print(colsformaster)
 
-    findmaster = mongoDB['week_1'].find_one({"_id": "master_prelim"})
+    findmaster = mongoDB['week_1_test'].find_one({"_id": "master_prelim"})
     if findmaster:
-        mongoDB['week_1'].delete_one({'_id': 'master_prelim'})
-    mongoDB['week_1'].insert_one(colsformaster)
+        mongoDB['week_1_test'].delete_one({'_id': 'master_prelim'})
+    mongoDB['week_1_test'].insert_one(colsformaster)
     print("done")
+
+def test():
+    myDict = {"_id": 'ligma'}
+    mongoDB['week_1_test'].insert_one(myDict)
 
 
 if __name__ == '__main__':
-    scheduler.add_job(id='test', func=getmasterprelim, trigger='cron', day_of_week="wed", hour=19, minute=1)
-    app.run(debug=True, port='0000', host='localhost', use_reloader=False)
+    scheduler.add_job(id='test1', func=test, trigger='cron', day_of_week="sat", hour=11, minute=8)
+    scheduler.add_job(id='test', func=getmasterprelim, trigger='cron', day_of_week="sat", hour=11, minute=21)
+    app.run(port='0000', host='localhost', use_reloader=False)
     # app.run(debug=True, port='0000', host='localhost')
 
 #     Personal Access token: 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 --> never expires apparently
