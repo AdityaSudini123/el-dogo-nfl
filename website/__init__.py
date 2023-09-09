@@ -22,7 +22,6 @@ def create_app():
 
         app.config.from_object(Config())
         scheduler = APScheduler()
-        scheduler.init_app(app)
 
         db.init_app(app)
 
