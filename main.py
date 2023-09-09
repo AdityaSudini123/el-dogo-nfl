@@ -10,6 +10,13 @@ import pandas as pd
 import pytz
 
 
+from apscheduler.schedulers.blocking import BlockingScheduler
+
+sched = BlockingScheduler()
+
+
+
+
 cluster = MongoClient('mongodb+srv://AdityaSudini:Harry_Potter12345@cluster0.gsst9ye.mongodb.net/?retryWrites=true&w=majority')
 mongoDB = cluster["ElDogoPuzzler2023"]
 
@@ -19,7 +26,7 @@ scheduler = create_app()[1]
 pst = pytz.timezone('America/Los_Angeles')
 est = pytz.timezone('America/New_York')
 
-@scheduler.task(id='test1', trigger='cron', misfire_grace_time=10, day_of_week="sat", hour=12, minute=30, timezone=pst)
+@sched.scheduled_job(id='test1', trigger='cron', misfire_grace_time=10, day_of_week="sat", hour=12, minute=50, timezone=pst)
 def getmasterprelim():
     schedule = mongoDB['week_1'].find_one({'_id': 'schedule'})
     weeknumber = schedule.pop('week_number')
@@ -90,8 +97,9 @@ def getmasterprelim():
 if __name__ == '__main__':
     # scheduler.add_job(id='test1', func=test, trigger='cron', day_of_week="sat", hour=11, minute=57)
     # scheduler.add_job(id='test', func=getmasterprelim, trigger='cron', day_of_week="sat", hour=12, minute=11)
-    scheduler.init_app(app)
-    scheduler.start()
+    # scheduler.init_app(app)
+    # scheduler.start()
+    sched.start()
     app.run(port='0000', host='localhost', use_reloader=False)
     # app.run(debug=True, port='0000', host='localhost')
 
