@@ -188,92 +188,93 @@ def select_picks():
         return redirect(url_for('views.home'))
     else:
         weekly_schedule = mongoDB['week_2'].find_one({'_id': 'schedule'})
-        week_number = weekly_schedule['week_number']
+        # week_number = weekly_schedule['week_number']
+        week_number = 2
         entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
         if entry_exists:
             flash('You have already submitted picks for this week', 'error')
             return redirect(url_for('views.home'))
+        if weekly_schedule:
+            home_teams = []
+            away_teams = []
+            game_days = []
+            for i in range(1, len(weekly_schedule)-1):
+                home_teams.append(weekly_schedule[f'game_{i}']['home team'])
+                away_teams.append(weekly_schedule[f'game_{i}']['away team'])
+                game_days.append(weekly_schedule[f'game_{i}']['day'])
 
+            total_possible = 0
+            for i in range(len(home_teams) + 1):
+                total_possible += i
+
+            possible_score = int(float(len(home_teams) / 2) * float(1 + len(home_teams)))
+
+            teams_dict = {}
+            if request.method == 'POST':
+                # confirmuser = request.form.get("confirmuser")
+                # if confirmuser != current_user.username:
+                #     logout_user()
+                #     flash('You were logged into someone else\'s account. Please login and try again.', 'error')
+                #     return redirect(url_for('auth.login'))
+                for i in range(len(home_teams)):
+                    home_confidence = []
+                    away_confidence = []
+                    total_score = 0
+                    for i in range(len(home_teams)):
+                        confidence_home = request.form.get(f'home_team_{i}')
+                        if confidence_home == '':
+                            confidence_home = '0'
+                            home_confidence.append(confidence_home)
+                            total_score += int(confidence_home)
+                        else:
+                            home_confidence.append(confidence_home)
+                        # away_teams[i] refers to the confidence number
+                        confidence_away = request.form.get(f'away_team_{i}')
+                        if confidence_away == '':
+                            confidence_away = '0'
+                            away_confidence.append(confidence_away)
+                            total_score += int(confidence_away)
+                        else:
+                            away_confidence.append(confidence_away)
+
+                    for i in range(len(home_confidence)):
+                        if home_confidence[i] == '0':
+                            if away_confidence[i] == '0':
+                                flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
+                                              'picks are entered correctly.')
+                                return redirect(url_for('auth.select_picks'))
+                        elif home_confidence[i] != '0':
+                            if away_confidence[i] != '0':
+                                flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
+                                              'picks are entered correctly.')
+                                return redirect(url_for('auth.select_picks'))
+                    if total_score > possible_score:
+                        flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
+                                              'picks are entered correctly.')
+                        return redirect(url_for('auth.select_picks'))
+
+                    for i in range(len(home_teams)):
+                        teams_dict[home_teams[i]] = home_confidence[i]
+                        teams_dict[away_teams[i]] = away_confidence[i]
+                    winners_dict = {}
+                    for item in teams_dict.items():
+                        if item[1] != '0':
+                            winners_dict[item[0]] = item[1]
+                    picks = list(winners_dict.values())
+                    picks2 = ['']
+                    for i in range(1, len(picks)+1):
+                        picks2.append(picks[i-1])
+                        if picks2[i] == picks2[i-1]:
+                            flash('Your picks have not been submitted. Please review the rules and ensure your picks are entered correctly', 'error')
+                            return redirect(url_for('auth.select_picks'))
+                tie_breaker = request.form.get('tie_breaker')
+                new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
+                             "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker, 'time': datetime.datetime.now()}
+                mongoDB[f'week_{week_number}'].insert_one(new_entry)
+                flash(category='success', message='User verified and picks submitted!')
+                return redirect(url_for('views.home'))
         if not weekly_schedule:
             flash(category='error', message='Schedule is not available yet')
-            return redirect(url_for('views.home'))
-        home_teams = []
-        away_teams = []
-        game_days = []
-        for i in range(1, len(weekly_schedule)-1):
-            home_teams.append(weekly_schedule[f'game_{i}']['home team'])
-            away_teams.append(weekly_schedule[f'game_{i}']['away team'])
-            game_days.append(weekly_schedule[f'game_{i}']['day'])
-
-        total_possible = 0
-        for i in range(len(home_teams) + 1):
-            total_possible += i
-
-        possible_score = int(float(len(home_teams) / 2) * float(1 + len(home_teams)))
-
-        teams_dict = {}
-        if request.method == 'POST':
-            # confirmuser = request.form.get("confirmuser")
-            # if confirmuser != current_user.username:
-            #     logout_user()
-            #     flash('You were logged into someone else\'s account. Please login and try again.', 'error')
-            #     return redirect(url_for('auth.login'))
-            for i in range(len(home_teams)):
-                home_confidence = []
-                away_confidence = []
-                total_score = 0
-                for i in range(len(home_teams)):
-                    confidence_home = request.form.get(f'home_team_{i}')
-                    if confidence_home == '':
-                        confidence_home = '0'
-                        home_confidence.append(confidence_home)
-                        total_score += int(confidence_home)
-                    else:
-                        home_confidence.append(confidence_home)
-                    # away_teams[i] refers to the confidence number
-                    confidence_away = request.form.get(f'away_team_{i}')
-                    if confidence_away == '':
-                        confidence_away = '0'
-                        away_confidence.append(confidence_away)
-                        total_score += int(confidence_away)
-                    else:
-                        away_confidence.append(confidence_away)
-
-                for i in range(len(home_confidence)):
-                    if home_confidence[i] == '0':
-                        if away_confidence[i] == '0':
-                            flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
-                                          'picks are entered correctly.')
-                            return redirect(url_for('auth.select_picks'))
-                    elif home_confidence[i] != '0':
-                        if away_confidence[i] != '0':
-                            flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
-                                          'picks are entered correctly.')
-                            return redirect(url_for('auth.select_picks'))
-                if total_score > possible_score:
-                    flash(category='error', message='Your picks have not been submitted. Please review the rules and ensure your '
-                                          'picks are entered correctly.')
-                    return redirect(url_for('auth.select_picks'))
-
-                for i in range(len(home_teams)):
-                    teams_dict[home_teams[i]] = home_confidence[i]
-                    teams_dict[away_teams[i]] = away_confidence[i]
-                winners_dict = {}
-                for item in teams_dict.items():
-                    if item[1] != '0':
-                        winners_dict[item[0]] = item[1]
-                picks = list(winners_dict.values())
-                picks2 = ['']
-                for i in range(1, len(picks)+1):
-                    picks2.append(picks[i-1])
-                    if picks2[i] == picks2[i-1]:
-                        flash('Your picks have not been submitted. Please review the rules and ensure your picks are entered correctly', 'error')
-                        return redirect(url_for('auth.select_picks'))
-            tie_breaker = request.form.get('tie_breaker')
-            new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
-                         "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker, 'time': datetime.datetime.now()}
-            mongoDB[f'week_{week_number}'].insert_one(new_entry)
-            flash(category='success', message='User verified and picks submitted!')
             return redirect(url_for('views.home'))
     return render_template("select_picks_test.html", name=current_user.email, home_teams=home_teams, away_teams=away_teams,
                            len=len(home_teams), week_number=week_number, game_days=game_days, possible_score=possible_score,

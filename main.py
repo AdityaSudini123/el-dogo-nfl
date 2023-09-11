@@ -99,9 +99,9 @@ if __name__ == '__main__':
     # scheduler.add_job(id='test', func=getmasterprelim, trigger='cron', day_of_week="sat", hour=12, minute=11)
     # scheduler.init_app(app)
     # scheduler.start()
-    sched.start()
-    app.run(port='0000', host='localhost', use_reloader=False)
-    # app.run(debug=True, port='0000', host='localhost')
+    # sched.start()
+    # app.run(port='0000', host='localhost', use_reloader=False)
+    app.run(debug=True, port='0000', host='localhost')
 
 #     Personal Access token: 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 --> never expires apparently
 
