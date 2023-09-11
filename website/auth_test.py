@@ -195,13 +195,15 @@ def select_picks():
             flash('You have already submitted picks for this week', 'error')
             return redirect(url_for('views.home'))
         if weekly_schedule:
+            week_number = weekly_schedule.pop('week_number')
+            weekly_schedule.pop('_id')
             home_teams = []
             away_teams = []
             game_days = []
-            for i in range(1, len(weekly_schedule)-1):
-                home_teams.append(weekly_schedule[f'game_{i}']['home team'])
-                away_teams.append(weekly_schedule[f'game_{i}']['away team'])
-                game_days.append(weekly_schedule[f'game_{i}']['day'])
+            for i in range(1, len(weekly_schedule)):
+                home_teams.append(weekly_schedule[f'game_{i}'][0])
+                away_teams.append(weekly_schedule[f'game_{i}'][1])
+                game_days.append(weekly_schedule[f'game_{i}'][2])
 
             total_possible = 0
             for i in range(len(home_teams) + 1):
@@ -271,7 +273,8 @@ def select_picks():
                 new_entry = {"_id": current_user.username, "week_number": week_number, "winners": list(winners_dict.keys()),
                              "confidence": list(winners_dict.values()), "tie_breaker": tie_breaker, 'time': datetime.datetime.now()}
                 mongoDB[f'week_{week_number}'].insert_one(new_entry)
-                flash(category='success', message='User verified and picks submitted!')
+                # flash(category='success', message='User verified and picks submitted!')
+                flash(category='success', message='Picks submitted!')
                 return redirect(url_for('views.home'))
         if not weekly_schedule:
             flash(category='error', message='Schedule is not available yet')
