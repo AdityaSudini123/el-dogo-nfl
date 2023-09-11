@@ -187,7 +187,7 @@ def select_picks():
         flash('Picks are currently closed', 'error')
         return redirect(url_for('views.home'))
     else:
-        weekly_schedule = mongoDB['week_1'].find_one({'_id': 'schedule'})
+        weekly_schedule = mongoDB['week_2'].find_one({'_id': 'schedule'})
         week_number = weekly_schedule['week_number']
         entry_exists = mongoDB[f'week_{week_number}'].find_one({"_id": current_user.username})
         if entry_exists:
