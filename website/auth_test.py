@@ -200,7 +200,7 @@ def select_picks():
             home_teams = []
             away_teams = []
             game_days = []
-            for i in range(1, len(weekly_schedule)):
+            for i in range(1, len(weekly_schedule)+1):
                 home_teams.append(weekly_schedule[f'game_{i}'][0])
                 away_teams.append(weekly_schedule[f'game_{i}'][1])
                 game_days.append(weekly_schedule[f'game_{i}'][2])
