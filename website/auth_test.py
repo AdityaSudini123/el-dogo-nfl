@@ -384,7 +384,30 @@ def personal_archive_1():
 @login_required
 def mastersheet():
     master_prelim = mongoDB['week_1'].find_one({'_id': 'master_prelim'})
-    if master_prelim:
+    master_final = mongoDB['week_1_test'].find_one({"_id": "master_final"})
+    if master_final:
+        num_games = len(mongoDB['week_1'].find_one({"_id": "schedule"}))-2
+        master_final.pop('_id')
+        column1 = master_final.pop('Week 1')
+        mydf = pd.DataFrame(master_final)
+        mydf.insert(0, 'Week 1', column1)
+        tableheads = list(mydf.columns)
+        len_tableheads = len(tableheads)
+        tablerows = []
+        tablelen = mydf.shape[0]
+        for i in range(tablelen):
+            tablerows.append(list(mydf.iloc[i, :]))
+        rowlen = len(tablerows[0])
+        # print(tablerows)
+        winner = mongoDB['week_1_test'].find_one({"_id": "winner"})
+        winning_player = winner['player']
+        winning_score = winner['score']
+        total_possible = sum(range(num_games+1))
+
+        message = f"Congratulations to this week\'s winner, \"{winning_player}\", with a score of {winning_score} points ({winning_score-total_possible})"
+        return render_template('mastersheet_final_test.html', tableheads=tableheads, len_tableheads=len_tableheads,
+                               tablelen=tablelen, tablerows=tablerows, rowlen=rowlen, message=message)
+    elif master_prelim:
         master_prelim.pop('_id')
         mydf = pd.DataFrame(master_prelim)
         tableheads = list(mydf.columns)
